@@ -453,7 +453,21 @@ app.get('/api/sync/export', (req, res) => {
   }, null, 2));
 });
 
-// 8. General Health & Server Info
+// 8. Firebase Configuration Endpoint
+app.get('/api/firebase-config', (req, res) => {
+  const configPath = path.join(__dirname, 'firebase-applet-config.json');
+  if (fs.existsSync(configPath)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(configPath, 'utf-8'));
+      return res.json(data);
+    } catch (e) {
+      return res.status(500).json({ error: 'CONFIG_PARSE_ERROR', message: e.message });
+    }
+  }
+  res.status(404).json({ error: 'NO_CONFIG_FOUND' });
+});
+
+// 9. General Health & Server Info
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'healthy',

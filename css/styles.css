@@ -3934,5 +3934,452 @@ input:checked + .slider:before {
     border-radius: 50%;
 }
 
+/* =============================================================
+   Firebase Authentication, Cloud Checkpoints & User Profiles
+   ============================================================= */
+
+/* Navbar Buttons for Auth & Checkpoints */
+.checkpoint-btn {
+    background-color: #f0fdfa;
+    color: #0f766e;
+    border: 1px solid #99f6e4;
+}
+.checkpoint-btn:hover {
+    background-color: #ccfbf1;
+    color: #115e59;
+}
+
+.auth-profile-btn {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+.auth-profile-btn:hover {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.auth-status-indicator {
+    display: inline-flex;
+    align-items: center;
+}
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.status-dot.online {
+    background-color: #22c55e;
+    box-shadow: 0 0 6px #22c55e;
+}
+.status-dot.offline {
+    background-color: #94a3b8;
+}
+
+.nav-user-avatar {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #3b82f6;
+}
+
+/* Checkpoint Modal Styles */
+.checkpoint-status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.cloud-sync-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+}
+.cloud-sync-pill.online {
+    background-color: #dcfce7;
+    color: #166534;
+    border: 1px solid #bbf7d0;
+}
+.cloud-sync-pill.offline {
+    background-color: #f1f5f9;
+    color: #475569;
+    border: 1px solid #cbd5e1;
+}
+
+.checkpoint-hint {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.create-checkpoint-box {
+    background: #f0fdfa;
+    border: 1px solid #99f6e4;
+    border-radius: var(--radius-md);
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.create-chk-header {
+    color: #0f766e;
+    font-size: 0.92rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkpoint-save-action-btn {
+    white-space: nowrap;
+    height: 42px;
+    padding: 0 1.25rem;
+    background: linear-gradient(135deg, #0d9488, #0f766e);
+    color: #ffffff;
+    font-weight: 700;
+    border-radius: var(--radius-md);
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: var(--transition-fast);
+}
+.checkpoint-save-action-btn:hover {
+    background: linear-gradient(135deg, #0f766e, #115e59);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.checkpoints-section-title h4 {
+    margin: 0 0 0.85rem 0;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.checkpoints-list-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+}
+
+.checkpoint-card {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    transition: var(--transition-fast);
+}
+.checkpoint-card:hover {
+    border-color: #0d9488;
+    box-shadow: var(--shadow-md);
+}
+
+.chk-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+.chk-title-text {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+.chk-date-text {
+    font-size: 0.75rem;
+    color: #64748b;
+    white-space: nowrap;
+}
+
+.chk-meta-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+.chk-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #475569;
+}
+.chk-badge.cart {
+    background: #e0f2fe;
+    color: #0369a1;
+}
+.chk-badge.cloud {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.chk-notes-text {
+    font-size: 0.8rem;
+    color: #475569;
+    background: #f8fafc;
+    padding: 0.4rem 0.6rem;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.75rem;
+    border-right: 3px solid #0d9488;
+}
+
+.chk-items-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.85rem;
+}
+.chk-item-pill {
+    font-size: 0.72rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    padding: 0.15rem 0.5rem;
+    border-radius: 4px;
+    color: #334155;
+}
+
+.chk-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px dashed var(--border-light);
+    padding-top: 0.65rem;
+}
+.chk-restore-btn {
+    background: #0f766e;
+    color: #ffffff;
+    border: none;
+    padding: 0.45rem 1rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: var(--transition-fast);
+}
+.chk-restore-btn:hover {
+    background: #115e59;
+}
+.chk-delete-btn {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    padding: 0.4rem 0.65rem;
+    border-radius: var(--radius-sm);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: var(--transition-fast);
+}
+.chk-delete-btn:hover {
+    background: #fee2e2;
+}
+
+/* Google Sign-in Promo & Modal View */
+.google-auth-promo-box {
+    text-align: center;
+    padding: 1.5rem 1rem;
+}
+.google-auth-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #fef2f2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+    padding: 0.35rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+.google-auth-promo-box h4 {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0f172a;
+    margin-bottom: 0.5rem;
+}
+.google-auth-promo-box p {
+    font-size: 0.85rem;
+    color: #64748b;
+    line-height: 1.5;
+    margin-bottom: 1.25rem;
+}
+
+.auth-benefits-list {
+    text-align: right;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: var(--radius-md);
+    padding: 0.85rem 1.2rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+.auth-benefit-item {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #334155;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.auth-benefit-item i {
+    color: #16a34a;
+}
+
+.google-signin-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    background: #ffffff;
+    color: #374151;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-md);
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: var(--transition-fast);
+    width: 100%;
+}
+.google-signin-btn:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: var(--shadow-sm);
+}
+
+/* User Profile Header (Logged in) */
+.user-profile-header-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.25rem;
+}
+.profile-avatar-large {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #3b82f6;
+}
+.profile-meta {
+    flex: 1;
+}
+.profile-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.2rem;
+}
+.profile-name-row h4 {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+.profile-verified-badge {
+    font-size: 0.7rem;
+    color: #2563eb;
+    background: #eff6ff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    font-weight: 700;
+}
+.profile-email-text {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.profile-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.65rem;
+    margin-bottom: 1.25rem;
+}
+.pstat-box {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 0.75rem 0.5rem;
+    text-align: center;
+}
+.pstat-box .val {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #0f766e;
+}
+.pstat-box .lbl {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.pharmacy-profile-form {
+    background: #ffffff;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+}
+.pharmacy-profile-form h5 {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.88rem;
+    font-weight: 800;
+    color: #1e293b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-signout {
+    background: transparent;
+    color: #ef4444;
+    border: 1px solid #fecaca;
+    padding: 0.5rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-size: 0.85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.btn-signout:hover {
+    background: #fee2e2;
+}
+
 
 

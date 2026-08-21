@@ -1022,7 +1022,7 @@ function saveSubmittedOrder(orderData) {
         // Remove if duplicate ID somehow
         const filtered = currentOrders.filter(o => o.id !== orderData.id);
         // Prepend new order and keep only last 5
-        const updated = [orderData, ...filtered].slice(0, 5);
+        const updated = [orderData, ...filtered].slice(0, 10);
         localStorage.setItem(STORAGE_KEY_RECENT_ORDERS, JSON.stringify(updated));
 
         // Also save pharmacy profile for zero-friction future orders
@@ -1034,6 +1034,11 @@ function saveSubmittedOrder(orderData) {
                 city: orderData.city
             };
             localStorage.setItem(STORAGE_KEY_PHARMACY_INFO, JSON.stringify(pharmacyProfile));
+        }
+
+        // Cloud Firestore Synchronization
+        if (typeof saveOrderToFirestore === 'function') {
+            saveOrderToFirestore(orderData);
         }
 
         renderRecentOrdersUI();
@@ -2061,6 +2066,9 @@ function savePriceAlerts(alerts) {
     try {
         localStorage.setItem(STORAGE_KEY_PRICE_ALERTS, JSON.stringify(alerts));
         updatePriceAlertBadges();
+        if (typeof pushPriceAlertsToFirestore === 'function') {
+            pushPriceAlertsToFirestore(alerts);
+        }
         return true;
     } catch (e) {
         console.error('Failed to save price alerts to localStorage:', e);

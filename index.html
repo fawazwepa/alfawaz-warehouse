@@ -31,6 +31,11 @@
     
     <!-- html2pdf.js for Professional PDF Generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <!-- Firebase SDK v10.12.2 (Auth & Cloud Firestore) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 </head>
 <body>
     <!-- Top Contact Bar -->
@@ -68,6 +73,21 @@
 
             <!-- Navbar Quick Controls -->
             <div class="navbar-controls">
+                <!-- Checkpoints & Cloud State Button -->
+                <button class="nav-action-pill checkpoint-btn" id="navCheckpointsBtn" onclick="openCheckpointsModal()" title="إدارة نقاط التفتيش والحفظ السحابي (Cloud Checkpoints)">
+                    <i class="fas fa-flag-checkered"></i>
+                    <span class="hide-mobile">نقطة تفتيش</span>
+                    <span id="navCheckpointBadge" class="mini-count-pill" style="display: none;">0</span>
+                </button>
+
+                <!-- Pharmacist Auth & Google Sign-In Button -->
+                <button class="nav-action-pill auth-profile-btn" id="navAuthBtn" onclick="openAuthModal()" title="تسجيل الدخول ومصادقة Google وحساب الصيدلي">
+                    <span class="auth-status-indicator"><span id="authStatusDot" class="status-dot offline"></span></span>
+                    <img id="authAvatarImg" class="nav-user-avatar" style="display: none;" alt="User">
+                    <i class="fas fa-user-circle auth-default-icon"></i>
+                    <span id="authUserNameText" class="hide-mobile">تسجيل الدخول</span>
+                </button>
+
                 <!-- Price Drop Alerts Button -->
                 <button class="nav-action-pill price-alert-btn" id="navPriceAlertsBtn" onclick="openPriceAlertsModal()" title="منبه انخفاض أسعار الأدوية في المستودع">
                     <i class="fas fa-bell"></i>
@@ -1170,7 +1190,191 @@
         </div>
     </div>
 
+    <!-- Cloud Checkpoints Manager Modal -->
+    <div class="modal-overlay" id="checkpointsModalOverlay" role="dialog" aria-modal="true" aria-label="مركز نقاط التفتيش والحفظ السحابي">
+        <div class="modal-card modal-admin-card" style="max-width: 780px;">
+            <div class="modal-header-modern">
+                <div class="modal-header-title">
+                    <div class="modal-header-icon" style="background: rgba(13, 148, 136, 0.12); color: #0d9488;">
+                        <i class="fas fa-flag-checkered"></i>
+                    </div>
+                    <div>
+                        <h3>مركز نقاط التفتيش والحفظ السحابي (Cloud Checkpoints)</h3>
+                        <p class="modal-subtitle">حفظ واستعادة لقطات السلة ومنبهات الأسعار في قاعدة بيانات Firestore السحابية</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeCheckpointsModal()" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-scrollable">
+                <!-- Cloud Status Banner -->
+                <div class="checkpoint-status-bar">
+                    <span id="checkpointCloudStatusBadge" class="cloud-sync-pill offline">
+                        <i class="fas fa-cloud"></i> تخزين محلي (سجل الدخول للمزامنة)
+                    </span>
+                    <span class="checkpoint-hint">تمكنك نقطة التفتيش من تجميد واستعادة حالة طلبيتك ومنبهاتك في أي وقت.</span>
+                </div>
+
+                <!-- Create New Checkpoint Box -->
+                <div class="create-checkpoint-box">
+                    <div class="create-chk-header">
+                        <i class="fas fa-plus-circle"></i> <strong>حفظ نقطة تفتيش جديدة للحالة الحالية:</strong>
+                    </div>
+                    <form onsubmit="handleCreateCheckpointFormSubmit(event)">
+                        <div class="form-row-grid">
+                            <div class="form-group-modern" style="flex: 2;">
+                                <label for="newCheckpointLabelInput">عنوان / وسم نقطة التفتيش:</label>
+                                <input type="text" id="newCheckpointLabelInput" class="admin-input" placeholder="مثلاً: مسودة طلبية دومينا والمسكنات، قبل تعديل الأسعار...">
+                            </div>
+                            <div class="form-group-modern" style="flex: 2;">
+                                <label for="newCheckpointNotesInput">ملاحظات إضافية (اختياري):</label>
+                                <input type="text" id="newCheckpointNotesInput" class="admin-input" placeholder="مثلاً: طلبيات تم تأكيدها هاتفياً...">
+                            </div>
+                            <div style="display: flex; align-items: flex-end;">
+                                <button type="submit" class="btn-save checkpoint-save-action-btn">
+                                    <i class="fas fa-bookmark"></i> حفظ نقطة تفتيش 📌
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Checkpoints List Section -->
+                <div class="checkpoints-section-title">
+                    <h4><i class="fas fa-clock-rotate-left"></i> سجل نقاط التفتيش المحفوظة</h4>
+                </div>
+
+                <div id="checkpointsListContainer" class="checkpoints-list-grid">
+                    <!-- Populated dynamically -->
+                </div>
+
+                <div id="checkpointsEmptyState" class="empty-alerts-state" style="display: none;">
+                    <i class="fas fa-flag empty-icon" style="color: #9ca3af;"></i>
+                    <h4>لا توجد نقاط تفتيش محفوظة حتى الآن</h4>
+                    <p>اضغط على زر "حفظ نقطة تفتيش 📌" أعلاه لحفظ سلتك الحالية ومنبهات الأسعار كنسخة سحابية يمكنك استرجاعها في أي وقت.</p>
+                </div>
+            </div>
+
+            <div class="modal-admin-actions" style="justify-content: flex-end; border-top: 1px solid var(--border-light); padding-top: 1rem;">
+                <button type="button" class="btn-cancel" onclick="closeCheckpointsModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Google Sign-In & Pharmacist Profile Modal -->
+    <div class="modal-overlay" id="authModalOverlay" role="dialog" aria-modal="true" aria-label="مصادقة وحساب الصيدلي">
+        <div class="modal-card modal-admin-card" style="max-width: 560px;">
+            <div class="modal-header-modern">
+                <div class="modal-header-title">
+                    <div class="modal-header-icon" style="background: rgba(30, 144, 255, 0.12); color: #1e90ff;">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <div>
+                        <h3>مصادقة وحساب الصيدلي (Firebase Auth)</h3>
+                        <p class="modal-subtitle">تسجيل الدخول الآمن عبر Google ومزامنة قاعدة بيانات Firestore السحابية</p>
+                    </div>
+                </div>
+                <button type="button" class="btn-close-modal" onclick="closeAuthModal()" aria-label="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="modal-body-scrollable">
+                <!-- Logged Out View -->
+                <div id="authLoggedOutView">
+                    <div class="google-auth-promo-box">
+                        <div class="google-auth-badge">
+                            <i class="fab fa-google" style="color: #ea4335;"></i>
+                            <span>تسجيل الدخول الموحد بضغطة زر واحدة</span>
+                        </div>
+                        <h4>اربط حسابك الصيدلاني بسحابة المستودع الآمنة</h4>
+                        <p>سجل الدخول بحساب Google لحفظ طلبياتك تلقائياً، مزامنة سلة الشراء عبر كل أجهزتك، واستخدام نقاط التفتيش السحابية ومنبهات الأسعار.</p>
+                        
+                        <div class="auth-benefits-list">
+                            <div class="auth-benefit-item"><i class="fas fa-circle-check"></i> حفظ الطلبيات والفواتير في قاعدة بيانات Firestore</div>
+                            <div class="auth-benefit-item"><i class="fas fa-circle-check"></i> مزامنة نقاط التفتيش (Checkpoints) والعودة إليها في أي وقت</div>
+                            <div class="auth-benefit-item"><i class="fas fa-circle-check"></i> متابعة تنبيهات انخفاض الأسعار وإرسال الطلبيات الفورية</div>
+                        </div>
+
+                        <button type="button" class="google-signin-btn" onclick="signInWithGoogle()">
+                            <svg class="google-icon" viewBox="0 0 48 48" width="22" height="22">
+                                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.79l7.97-6.2z"/>
+                                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                            </svg>
+                            <span>تسجيل الدخول السريع عبر Google</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Logged In View -->
+                <div id="authLoggedInView" style="display: none;">
+                    <div class="user-profile-header-card">
+                        <img id="profileAvatarImg" class="profile-avatar-large" src="" alt="الصورة الشخصية">
+                        <div class="profile-meta">
+                            <div class="profile-name-row">
+                                <h4 id="profileDisplayName">دكتور صيدلي</h4>
+                                <span class="profile-verified-badge"><i class="fas fa-check-circle"></i> معتمد وموثق</span>
+                            </div>
+                            <span id="profileEmail" class="profile-email-text">user@gmail.com</span>
+                        </div>
+                    </div>
+
+                    <!-- Profile Stats -->
+                    <div class="profile-stats-row">
+                        <div class="pstat-box">
+                            <span class="val" id="profileOrdersCount">0</span>
+                            <span class="lbl">طلبيات وفواتير</span>
+                        </div>
+                        <div class="pstat-box">
+                            <span class="val" id="profileCheckpointsCount">0</span>
+                            <span class="lbl">نقاط تفتيش سحابية</span>
+                        </div>
+                        <div class="pstat-box">
+                            <span class="val" id="profileAlertsCount">0</span>
+                            <span class="lbl">منبهات أسعار</span>
+                        </div>
+                    </div>
+
+                    <!-- Pharmacy Information Form in Firestore -->
+                    <div class="pharmacy-profile-form">
+                        <h5><i class="fas fa-clinic-medical"></i> بيانات الصيدلية في قاعدة بيانات Firestore:</h5>
+                        <div class="form-group-modern" style="margin-top: 8px;">
+                            <label for="pharmacyNameInput">اسم الصيدلية:</label>
+                            <input type="text" id="pharmacyNameInput" class="admin-input" placeholder="مثلاً: صيدلية الأمل الحديثة">
+                        </div>
+                        <div class="form-group-modern" style="margin-top: 8px;">
+                            <label for="pharmacyPhoneInput">رقم الهاتف / الواتساب:</label>
+                            <input type="text" id="pharmacyPhoneInput" class="admin-input" placeholder="0995711536">
+                        </div>
+                        <div class="form-group-modern" style="margin-top: 8px;">
+                            <label for="pharmacyAddressInput">المدينة / العنوان:</label>
+                            <input type="text" id="pharmacyAddressInput" class="admin-input" placeholder="دمشق - الميدان...">
+                        </div>
+                        <button type="button" class="btn-save" onclick="savePharmacistProfile()" style="margin-top: 10px; width: 100%; justify-content: center;">
+                            <i class="fas fa-cloud-arrow-up"></i> حفظ بيانات الصيدلية في Firestore
+                        </button>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; text-align: center;">
+                        <button type="button" class="btn-signout" onclick="signOutUser()">
+                            <i class="fas fa-sign-out-alt"></i> تسجيل الخروج من الحساب
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-admin-actions" style="justify-content: flex-end; border-top: 1px solid var(--border-light); padding-top: 1rem;">
+                <button type="button" class="btn-cancel" onclick="closeAuthModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Files -->
+    <script src="js/firebase-service.js"></script>
     <script src="js/app.js"></script>
     <script src="js/search.js"></script>
     <script src="js/manufacturers.js"></script>
