@@ -5,20 +5,20 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ECF0F1",
-  "theme_color": "#1E90FF",
+  "background_color": "#ffffff",
+  "theme_color": "#0f766e",
   "orientation": "portrait-primary",
   "lang": "ar",
   "dir": "rtl",
   "icons": [
     {
-      "src": "https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png",
+      "src": "/images/app-icon.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png",
+      "src": "/images/app-icon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

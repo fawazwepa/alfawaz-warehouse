@@ -121,4 +121,73 @@
     .modal-add-cart-btn {
         justify-content: center;
     }
+
+    .recent-order-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .secondary-order-actions {
+        flex-wrap: wrap;
+    }
+
+    .drawer-tab-btn {
+        font-size: 0.75rem;
+        padding: 0.5rem 0.4rem;
+    }
+
+    .doc-parties-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .doc-financial-summary {
+        grid-template-columns: 1fr;
+    }
+
+    .doc-header-top {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .doc-meta-block {
+        text-align: right;
+        direction: rtl;
+        width: 100%;
+    }
+
+    .invoice-toolbar-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .toolbar-left {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .invoice-action-btn {
+        justify-content: center;
+    }
+
+    .invoice-document-sheet {
+        padding: 1.25rem 0.85rem;
+    }
+
+    .quick-discount-chips {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .alert-card-metrics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .alert-settings-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .alert-tab-btn {
+        font-size: 0.775rem;
+        padding: 0.5rem 0.6rem;
+    }
 }
+

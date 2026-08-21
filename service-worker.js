@@ -14,7 +14,7 @@ const STATIC_ASSETS = [
     '/manifest.json',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap',
     'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css',
-    'https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png',
+    '/images/app-icon.png',
     'https://i.postimg.cc/W40RPcbD/ailled-logo.png',
     'https://i.postimg.cc/BbQRD85K/barakat-logo.png',
     'https://i.postimg.cc/85bqjd6m/celia-logo.png',

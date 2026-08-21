@@ -8,12 +8,14 @@
     
     <!-- PWA Manifest & Mobile Meta Tags -->
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1b4332">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/app-icon.png">
+    <link rel="shortcut icon" type="image/png" href="/images/app-icon.png">
+    <meta name="theme-color" content="#0f766e">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="مستودع الفواز">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png">
+    <link rel="apple-touch-icon" href="/images/app-icon.png">
 
     <!-- Google Fonts - Cairo & Tajawal -->
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -26,6 +28,9 @@
     
     <!-- Font Awesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- html2pdf.js for Professional PDF Generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 </head>
 <body>
     <!-- Top Contact Bar -->
@@ -53,7 +58,7 @@
         <div class="navbar-container">
             <div class="navbar-brand" onclick="resetFilters()">
                 <div class="brand-logo-wrap">
-                    <img src="https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png" alt="شعار مستودع الفواز" class="brand-logo-img">
+                    <img src="/images/app-icon.png" alt="شعار مستودع الفواز" class="brand-logo-img">
                 </div>
                 <div class="brand-titles">
                     <span class="brand-name">مستودع الفواز</span>
@@ -63,7 +68,20 @@
 
             <!-- Navbar Quick Controls -->
             <div class="navbar-controls">
+                <!-- Price Drop Alerts Button -->
+                <button class="nav-action-pill price-alert-btn" id="navPriceAlertsBtn" onclick="openPriceAlertsModal()" title="منبه انخفاض أسعار الأدوية في المستودع">
+                    <i class="fas fa-bell"></i>
+                    <span class="hide-mobile">منبه الأسعار</span>
+                    <span id="navPriceAlertBadge" class="mini-count-pill alert-badge-pill" style="display: none;">0</span>
+                </button>
+
                 <!-- Live Server Sync Buttons -->
+                <button class="nav-action-pill history-btn" id="navHistoryBtn" onclick="openRecentOrdersModal()" title="سجل آخر 5 طلبيات مسجلة والإعادة السريعة">
+                    <i class="fas fa-clock-rotate-left"></i>
+                    <span class="hide-mobile">آخر الطلبيات</span>
+                    <span id="navHistoryBadge" class="mini-count-pill" style="display: none;">0</span>
+                </button>
+
                 <button class="nav-action-pill sync-btn" id="navbarSyncBtn" onclick="syncWithServer(true)" title="مزامنة فورية مع سيرفر المستودع">
                     <i class="fas fa-sync-alt"></i>
                     <span class="hide-mobile">مزامنة فورية</span>
@@ -237,7 +255,7 @@
         <div class="drawer-header">
             <div class="drawer-title">
                 <i class="fas fa-shopping-basket"></i>
-                <span>سلة طلبية الصيدلية</span>
+                <span id="drawerTitleText">سلة طلبية الصيدلية</span>
                 <span id="drawerCartCount" class="badge">0</span>
             </div>
             <button class="drawer-close-btn" onclick="closeCartDrawer()" aria-label="إغلاق السلة">
@@ -245,80 +263,142 @@
             </button>
         </div>
 
-        <div class="drawer-body">
-            <!-- Cart Items List -->
-            <div class="cart-items-list" id="cartItemsList">
-                <!-- Cart items added dynamically -->
+        <!-- Drawer Navigation Tabs -->
+        <div class="drawer-tabs-nav">
+            <button class="drawer-tab-btn active" id="drawerTabCurrentCart" onclick="switchDrawerTab('cart')">
+                <i class="fas fa-cart-shopping"></i>
+                <span>السلة الحالية</span>
+                <span id="drawerTabCartBadge" class="tab-badge">0</span>
+            </button>
+            <button class="drawer-tab-btn" id="drawerTabRecentOrders" onclick="switchDrawerTab('history')">
+                <i class="fas fa-clock-rotate-left"></i>
+                <span>الطلبيات السابقة (آخر 5)</span>
+                <span id="drawerTabHistoryBadge" class="tab-badge history-count">0</span>
+            </button>
+        </div>
+
+        <!-- Tab 1: Current Cart Content -->
+        <div class="drawer-tab-pane active" id="drawerCartTabPane">
+            <div class="drawer-body">
+                <!-- Dedicated Drag & Drop Dropzone inside Cart Drawer -->
+                <div class="cart-drawer-drop-zone" id="cartDrawerDropZone">
+                    <i class="fas fa-cart-arrow-down drop-zone-icon"></i>
+                    <div class="drop-zone-text">
+                        <strong>أفلت بطاقة الدواء هنا</strong>
+                        <span>للإضافة السريعة إلى سلة الطلبية</span>
+                    </div>
+                </div>
+
+                <!-- Cart Items List -->
+                <div class="cart-items-list" id="cartItemsList">
+                    <!-- Cart items added dynamically -->
+                </div>
+
+                <!-- Empty Cart State with Fast Reorder Shortcuts -->
+                <div class="empty-cart-view" id="emptyCartView">
+                    <i class="fas fa-basket-shopping empty-icon"></i>
+                    <h4>سلة الطلبيات فارغة حالياً</h4>
+                    <p>قم بإضافة الأدوية المطلوبة من جدول البروشور أو البطاقات، أو أعد طلب إحدى طلبياتك السابقة أدناه.</p>
+                    
+                    <!-- Quick Past Orders Container in Empty View -->
+                    <div id="emptyCartPastOrdersSection" class="empty-past-orders-section" style="display: none;">
+                        <div class="empty-past-orders-title">
+                            <i class="fas fa-bolt"></i>
+                            <span>تكرار سريع لآخر طلبية مسجلة:</span>
+                        </div>
+                        <div id="emptyCartPastOrdersContent"></div>
+                    </div>
+                </div>
+
+                <!-- Pharmacy Information Form -->
+                <div class="pharmacy-form-card" id="pharmacyFormCard" style="display: none;">
+                    <h5><i class="fas fa-clinic-medical"></i> معلومات الصيدلية والطلب</h5>
+                    <div class="form-group">
+                        <label for="pharmacyNameInput">اسم الصيدلية / المركز الطبي *</label>
+                        <input type="text" id="pharmacyNameInput" class="form-control" placeholder="مثال: صيدلية الأمل">
+                    </div>
+                    <div class="form-group">
+                        <label for="pharmacistNameInput">اسم الصيدلي / الدكتور *</label>
+                        <input type="text" id="pharmacistNameInput" class="form-control" placeholder="مثال: د. أحمد">
+                    </div>
+                    <div class="form-group">
+                        <label for="pharmacyPhoneInput">رقم الموبايل / التواصل *</label>
+                        <input type="tel" id="pharmacyPhoneInput" class="form-control" placeholder="مثال: 0991234567" dir="ltr">
+                    </div>
+                    <div class="form-group">
+                        <label for="pharmacyCityInput">المدينة / العنوان</label>
+                        <input type="text" id="pharmacyCityInput" class="form-control" placeholder="مثال: دمشق - الميدان">
+                    </div>
+                    <div class="form-group">
+                        <label for="orderNotesInput">ملاحظات الطلبية (إن وجدت)</label>
+                        <textarea id="orderNotesInput" class="form-control" rows="2" placeholder="أية تعليمات خاصة للتوصيل أو التعبئة..."></textarea>
+                    </div>
+                </div>
             </div>
 
-            <!-- Empty Cart State -->
-            <div class="empty-cart-view" id="emptyCartView">
-                <i class="fas fa-basket-shopping empty-icon"></i>
-                <h4>سلة الطلبيات فارغة حالياً</h4>
-                <p>قم بإضافة الأدوية المطلوبة من جدول البروشور أو البطاقات لإرسال الطلبية مباشرة.</p>
-            </div>
+            <!-- Drawer Footer with Totals and Actions -->
+            <div class="drawer-footer" id="drawerFooter" style="display: none;">
+                <div class="totals-summary-box">
+                    <div class="total-row">
+                        <span>إجمالي الأصناف:</span>
+                        <strong id="cartTotalItems">0 صنف</strong>
+                    </div>
+                    <div class="total-row">
+                        <span>إجمالي السعر الصافي (النت):</span>
+                        <strong id="cartNetTotalPrice" class="price-highlight">0 ل.س</strong>
+                    </div>
+                    <div class="total-row bonus-highlight">
+                        <span><i class="fas fa-gift"></i> إجمالي البونص المتوقع:</span>
+                        <strong id="cartTotalBonusFree">+0 عبوة مجانية</strong>
+                    </div>
+                </div>
 
-            <!-- Pharmacy Information Form -->
-            <div class="pharmacy-form-card" id="pharmacyFormCard" style="display: none;">
-                <h5><i class="fas fa-clinic-medical"></i> معلومات الصيدلية والطلب</h5>
-                <div class="form-group">
-                    <label for="pharmacyNameInput">اسم الصيدلية / المركز الطبي *</label>
-                    <input type="text" id="pharmacyNameInput" class="form-control" placeholder="مثال: صيدلية الأمل">
-                </div>
-                <div class="form-group">
-                    <label for="pharmacistNameInput">اسم الصيدلي / الدكتور *</label>
-                    <input type="text" id="pharmacistNameInput" class="form-control" placeholder="مثال: د. أحمد">
-                </div>
-                <div class="form-group">
-                    <label for="pharmacyPhoneInput">رقم الموبايل / التواصل *</label>
-                    <input type="tel" id="pharmacyPhoneInput" class="form-control" placeholder="مثال: 0991234567" dir="ltr">
-                </div>
-                <div class="form-group">
-                    <label for="pharmacyCityInput">المدينة / العنوان</label>
-                    <input type="text" id="pharmacyCityInput" class="form-control" placeholder="مثال: دمشق - الميدان">
-                </div>
-                <div class="form-group">
-                    <label for="orderNotesInput">ملاحظات الطلبية (إن وجدت)</label>
-                    <textarea id="orderNotesInput" class="form-control" rows="2" placeholder="أية تعليمات خاصة للتوصيل أو التعبئة..."></textarea>
+                <!-- Smart AI Cart Analysis Button -->
+                <button class="ai-analyze-cart-btn" onclick="analyzeCartWithGemini()">
+                    <i class="fas fa-brain"></i>
+                    <span>تحليل الطلبية ومضاعفة البونص بـ Gemini AI</span>
+                </button>
+
+                <div class="action-buttons-stack">
+                    <button class="whatsapp-send-btn" id="sendWhatsappBtn" onclick="sendOrderToWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>إرسال الطلبية عبر واتساب المباشر</span>
+                    </button>
+                    <button class="print-order-btn" id="generatePdfInvoiceBtn" onclick="openInvoicePdfModal('current')" title="إنشاء وتنزيل فاتورة PDF احترافية أو طباعتها">
+                        <i class="fas fa-file-pdf"></i>
+                        <span>حفظ / طباعة فاتورة PDF احترافية</span>
+                    </button>
+                    <button class="clear-cart-link" onclick="clearCart()">
+                        <i class="fas fa-trash-alt"></i> تفريغ السلة
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Drawer Footer with Totals and Actions -->
-        <div class="drawer-footer" id="drawerFooter" style="display: none;">
-            <div class="totals-summary-box">
-                <div class="total-row">
-                    <span>إجمالي الأصناف:</span>
-                    <strong id="cartTotalItems">0 صنف</strong>
+        <!-- Tab 2: Recent 5 Submitted Orders (Local Storage) -->
+        <div class="drawer-tab-pane" id="drawerHistoryTabPane" style="display: none;">
+            <div class="drawer-body">
+                <div class="recent-orders-header-bar">
+                    <div>
+                        <h4 class="recent-orders-pane-title"><i class="fas fa-history"></i> سجل آخر 5 طلبيات مسجلة</h4>
+                        <p class="recent-orders-pane-desc">محفوظة محلياً في جهازك لإعادة طلب الأدوية المتكررة بضغطة واحدة</p>
+                    </div>
+                    <button class="clear-history-mini-btn" onclick="clearAllRecentOrders()" title="مسح سجل الطلبيات المحفوظة">
+                        <i class="fas fa-trash-can"></i>
+                    </button>
                 </div>
-                <div class="total-row">
-                    <span>إجمالي السعر الصافي (النت):</span>
-                    <strong id="cartNetTotalPrice" class="price-highlight">0 ل.س</strong>
-                </div>
-                <div class="total-row bonus-highlight">
-                    <span><i class="fas fa-gift"></i> إجمالي البونص المتوقع:</span>
-                    <strong id="cartTotalBonusFree">+0 عبوة مجانية</strong>
-                </div>
-            </div>
 
-            <!-- Smart AI Cart Analysis Button -->
-            <button class="ai-analyze-cart-btn" onclick="analyzeCartWithGemini()">
-                <i class="fas fa-brain"></i>
-                <span>تحليل الطلبية ومضاعفة البونص بـ Gemini AI</span>
-            </button>
+                <!-- Recent Orders List Container -->
+                <div id="drawerRecentOrdersList" class="recent-orders-list">
+                    <!-- Populated via renderRecentOrdersUI() -->
+                </div>
 
-            <div class="action-buttons-stack">
-                <button class="whatsapp-send-btn" id="sendWhatsappBtn" onclick="sendOrderToWhatsApp()">
-                    <i class="fab fa-whatsapp"></i>
-                    <span>إرسال الطلبية عبر واتساب المباشر</span>
-                </button>
-                <button class="print-order-btn" onclick="printCurrentOrder()">
-                    <i class="fas fa-print"></i>
-                    <span>طباعة / حفظ فاتورة الطلب</span>
-                </button>
-                <button class="clear-cart-link" onclick="clearCart()">
-                    <i class="fas fa-trash-alt"></i> تفريغ السلة
-                </button>
+                <!-- Empty Recent Orders State -->
+                <div id="emptyRecentOrdersView" class="empty-cart-view" style="display: none;">
+                    <i class="fas fa-clock-rotate-left empty-icon"></i>
+                    <h4>لا توجد طلبيات سابقة مسجلة بعد</h4>
+                    <p>عند إرسال أي طلبية جديدة عبر واتساب أو طباعتها، سيتم حفظها تلقائياً هنا لتسهيل إعادة طلبها مستقبلاً.</p>
+                </div>
             </div>
         </div>
     </aside>
@@ -404,6 +484,50 @@
                         <div class="detail-info">
                             <span class="detail-title">الشركة المصنعة / الوكالة</span>
                             <span class="detail-value" id="modalManufacturer">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Smart Price Drop Alert Box for Pharmacists -->
+                <div class="modal-price-alert-box" id="modalPriceAlertBox">
+                    <div class="price-alert-box-header">
+                        <div class="alert-title-wrap">
+                            <i class="fas fa-bell alert-bell-icon"></i>
+                            <div>
+                                <strong>تنبيه انخفاض السعر (منبه الصيدلي الذكي)</strong>
+                                <span class="alert-box-sub">مراقبة تلقائية لمخزون المستودع والتنبيه فور هبوط السعر</span>
+                            </div>
+                        </div>
+                        <span class="alert-status-badge" id="modalAlertStatusBadge">غير مفعل</span>
+                    </div>
+                    <div class="price-alert-box-body">
+                        <p class="alert-box-desc">حدد السعر المستهدف (الحد الأقصى للشراء). عندما ينخفض سعر هذا الدواء في المستودع إلى هذا الحد أو أقل، ستتلقى إشعاراً فورياً.</p>
+                        <div class="alert-inputs-wrap">
+                            <div class="alert-input-group">
+                                <label for="modalTargetPriceInput">السعر المستهدف المطلوب للطلب:</label>
+                                <div class="input-with-unit">
+                                    <input type="number" id="modalTargetPriceInput" class="target-price-input" placeholder="أدخل السعر المطلوب" oninput="updateModalAlertSavingsPreview()">
+                                    <span class="unit-text">ل.س</span>
+                                </div>
+                            </div>
+                            <div class="alert-quick-presets">
+                                <span class="presets-caption">نسب سريعة:</span>
+                                <button type="button" class="preset-btn" onclick="applyTargetPricePreset(0.95)">-5%</button>
+                                <button type="button" class="preset-btn" onclick="applyTargetPricePreset(0.90)">-10%</button>
+                                <button type="button" class="preset-btn" onclick="applyTargetPricePreset(0.85)">-15%</button>
+                                <button type="button" class="preset-btn" onclick="applyTargetPricePreset(0.80)">-20%</button>
+                            </div>
+                        </div>
+                        <div class="alert-savings-hint" id="modalAlertSavingsHint">
+                            <i class="fas fa-coins"></i> <span id="modalAlertSavingsText">حدد سعراً أقل من السعر الحالي لحساب التوفير</span>
+                        </div>
+                        <div class="alert-actions-row">
+                            <button type="button" class="set-alert-submit-btn" id="modalSetAlertBtn" onclick="saveMedicineAlertFromDetailsModal()">
+                                <i class="fas fa-bell"></i> <span>تفعيل ومراقبة السعر</span>
+                            </button>
+                            <button type="button" class="remove-alert-btn" id="modalRemoveAlertBtn" onclick="removeMedicineAlertFromDetailsModal()" style="display: none;">
+                                <i class="fas fa-bell-slash"></i> إلغاء التنبيه
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -572,6 +696,347 @@
         </div>
     </div>
 
+    <!-- Recent Orders Modal Overlay (Fast Reordering Center) -->
+    <div id="recentOrdersModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='recentOrdersModalOverlay') closeRecentOrdersModal()">
+        <div class="modal-container admin-modal recent-orders-modal" role="dialog" aria-labelledby="recentOrdersModalTitle">
+            <button class="modal-close-btn" onclick="closeRecentOrdersModal()" aria-label="إغلاق"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <span class="modal-brand"><i class="fas fa-history"></i> الذاكرة المحلية للصيدلي</span>
+                    <span class="modal-bonus" id="modalOrdersCountBadge">5 طلبيات مسجلة</span>
+                </div>
+                <h3 class="modal-title" id="recentOrdersModalTitle"><i class="fas fa-clock-rotate-left"></i> سجل آخر 5 طلبيات مسجلة وإعادة الطلب السريع</h3>
+                <p class="modal-sub">يمكنك إعادة طلب أي فاتورة سابقة بالكامل أو اختيار أصناف معينة لإضافتها فورياً لسلة طلبيتك الحالية</p>
+            </div>
+            <div class="recent-orders-modal-body">
+                <div id="modalRecentOrdersList" class="recent-orders-list">
+                    <!-- Populated dynamically via renderRecentOrdersUI() -->
+                </div>
+                <div id="emptyModalRecentOrdersView" class="empty-cart-view" style="display: none;">
+                    <i class="fas fa-clock-rotate-left empty-icon"></i>
+                    <h4>لا توجد طلبيات مسجلة حتى الآن</h4>
+                    <p>عند إرسال طلبيتك القادمة عبر واتساب أو طباعتها، سيتم حفظ آخر 5 طلبيات تلقائياً في جهازك.</p>
+                </div>
+            </div>
+            <div class="modal-admin-actions" style="justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 1rem; margin-top: 1rem;">
+                <button type="button" class="clear-cart-link" onclick="clearAllRecentOrders()" style="color: var(--danger-red);">
+                    <i class="fas fa-trash-alt"></i> مسح سجل الطلبيات بالكامل
+                </button>
+                <button type="button" class="btn-cancel" onclick="closeRecentOrdersModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Professional Invoice PDF Generator & Preview Modal -->
+    <div id="invoicePdfModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='invoicePdfModalOverlay') closeInvoicePdfModal()">
+        <div class="modal-container admin-modal invoice-pdf-modal" role="dialog" aria-labelledby="invoiceModalTitle">
+            <button class="modal-close-btn" onclick="closeInvoicePdfModal()" aria-label="إغلاق"><i class="fas fa-times"></i></button>
+            
+            <div class="modal-header invoice-modal-header">
+                <div class="modal-header-top">
+                    <span class="modal-brand"><i class="fas fa-file-invoice"></i> نظام الفوترة والتوثيق الطبي</span>
+                    <span class="modal-bonus" id="invoiceStatusBadge">جاهزة للتصدير PDF</span>
+                </div>
+                <h3 class="modal-title" id="invoiceModalTitle"><i class="fas fa-file-pdf"></i> معاينة وتصدير فاتورة الطلبية (مستند PDF رسمي)</h3>
+                <p class="modal-sub">مستند منظم وفق المعايير الصيدلانية السورية يحتوي كافة تفاصيل الصيدلية، الأدوية، البونصات الممنوحة، والمجاميع الصافية.</p>
+            </div>
+
+            <!-- PDF Quick Controls Action Toolbar -->
+            <div class="invoice-toolbar-bar">
+                <div class="toolbar-left">
+                    <button class="invoice-action-btn download-pdf-btn" id="downloadPdfMainBtn" onclick="downloadCurrentInvoicePDF()">
+                        <i class="fas fa-download"></i>
+                        <span>تنزيل مستند PDF مباشر</span>
+                    </button>
+                    <button class="invoice-action-btn print-direct-btn" onclick="printInvoiceDocumentDirect()">
+                        <i class="fas fa-print"></i>
+                        <span>طباعة فورية</span>
+                    </button>
+                    <button class="invoice-action-btn whatsapp-share-btn" id="shareInvoiceWaBtn" onclick="shareCurrentInvoiceWhatsApp()">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>مشاركة واتساب</span>
+                    </button>
+                </div>
+                <div class="toolbar-right">
+                    <span id="pdfGeneratingIndicator" class="pdf-gen-spinner" style="display: none;">
+                        <i class="fas fa-circle-notch fa-spin"></i> جاري تجهيز ملف PDF...
+                    </span>
+                </div>
+            </div>
+
+            <!-- Rendered A4 Invoice Document Sheet -->
+            <div class="invoice-document-scroll-wrap">
+                <div id="invoiceDocumentSheet" class="invoice-document-sheet">
+                    <!-- Populated dynamically via renderInvoiceSheetHtml() -->
+                </div>
+            </div>
+
+            <div class="modal-admin-actions invoice-modal-footer">
+                <div class="footer-info-text">
+                    <i class="fas fa-shield-halved"></i> يتم حفظ نسخة من هذه الفاتورة تلقائياً في سجل آخر 5 طلبيات مسجلة
+                </div>
+                <div class="footer-btns">
+                    <button type="button" class="btn-cancel" onclick="closeInvoicePdfModal()">إغلاق المعاينة</button>
+                    <button type="button" class="btn-save" onclick="downloadCurrentInvoicePDF()">
+                        <i class="fas fa-file-arrow-down"></i> حفظ كملف PDF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Set Price Alert Modal -->
+    <div id="setPriceAlertModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='setPriceAlertModalOverlay') closeSetPriceAlertModal()">
+        <div class="modal-container admin-modal price-alert-quick-modal" role="dialog" aria-labelledby="quickAlertMedName">
+            <button class="modal-close-btn" onclick="closeSetPriceAlertModal()" aria-label="إغلاق"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <span class="modal-brand" id="quickAlertCompany"><i class="fas fa-building"></i> شركة معتمدة</span>
+                    <span class="modal-bonus" id="quickAlertCurrentPriceBadge">السعر الحالي: 0 ل.س</span>
+                </div>
+                <h3 class="modal-title" id="quickAlertMedName"><i class="fas fa-bell"></i> ضبط منبه انخفاض السعر</h3>
+                <p class="modal-sub">يراقب النظام مخزون وتحديثات مستودع الفواز ويرسل إشعاراً فورياً عند هبوط السعر للحد المطلوب</p>
+            </div>
+            
+            <div class="quick-alert-modal-body">
+                <input type="hidden" id="quickAlertMedId">
+                <div class="quick-alert-info-card">
+                    <div class="info-metric">
+                        <span class="label">السعر الصافي الحالي:</span>
+                        <strong class="val price-current" id="quickAlertCurrentPriceText">0 ل.س</strong>
+                    </div>
+                    <div class="info-metric">
+                        <span class="label">البونص الحالي:</span>
+                        <strong class="val" id="quickAlertBonusText">بدون بونص</strong>
+                    </div>
+                </div>
+
+                <div class="form-group-modern">
+                    <label for="quickAlertTargetPriceInput"><i class="fas fa-bullseye" style="color: #0d9488;"></i> حد السعر المستهدف (تنبيه عند الوصول له أو أقل):</label>
+                    <div class="input-unit-wrap">
+                        <input type="number" id="quickAlertTargetPriceInput" class="admin-input target-input-highlight" placeholder="مثلاً: 28000" min="100" step="500" oninput="updateQuickAlertSavingsPreview()">
+                        <span class="unit-badge">ل.س</span>
+                    </div>
+                </div>
+
+                <div class="presets-label">خيارات تخفيض ونسب سريعة:</div>
+                <div class="quick-discount-chips">
+                    <button type="button" class="discount-chip" onclick="setQuickAlertPercentage(0.95)">-5% <small id="pctVal5">تخفيض</small></button>
+                    <button type="button" class="discount-chip" onclick="setQuickAlertPercentage(0.90)">-10% <small id="pctVal10">تخفيض</small></button>
+                    <button type="button" class="discount-chip" onclick="setQuickAlertPercentage(0.85)">-15% <small id="pctVal15">تخفيض</small></button>
+                    <button type="button" class="discount-chip" onclick="setQuickAlertPercentage(0.80)">-20% <small id="pctVal20">تخفيض</small></button>
+                </div>
+
+                <div class="savings-preview-box" id="quickAlertSavingsBox">
+                    <i class="fas fa-tags"></i>
+                    <span id="quickAlertSavingsText">حدد سعراً مستهدفاً لحساب مقدار التوفير</span>
+                </div>
+            </div>
+
+            <div class="modal-admin-actions">
+                <button type="button" class="btn-cancel" onclick="closeSetPriceAlertModal()">إلغاء</button>
+                <button type="button" class="btn-delete" id="quickAlertDeleteBtn" onclick="deleteQuickAlert()" style="display: none;">
+                    <i class="fas fa-trash-alt"></i> حذف المنبه
+                </button>
+                <button type="button" class="btn-save" onclick="saveQuickPriceAlert()">
+                    <i class="fas fa-bell"></i> حفظ وتفعيل المنبه
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Comprehensive Price Alerts Management Center Modal -->
+    <div id="priceAlertsModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='priceAlertsModalOverlay') closePriceAlertsModal()">
+        <div class="modal-container admin-modal price-alerts-dashboard-modal" role="dialog" aria-labelledby="priceAlertsModalTitle">
+            <button class="modal-close-btn" onclick="closePriceAlertsModal()" aria-label="إغلاق"><i class="fas fa-times"></i></button>
+            
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <span class="modal-brand"><i class="fas fa-chart-line"></i> نظام مراقبة وتنبيه الأسعار</span>
+                    <span class="modal-bonus" id="alertsSummaryCountBadge">0 منبهات نشطة</span>
+                </div>
+                <h3 class="modal-title" id="priceAlertsModalTitle"><i class="fas fa-bell" style="color: #0d9488;"></i> مركز منبهات الأسعار وتنبيهات الهبوط في المخزون</h3>
+                <p class="modal-sub">راقب أسعار الأدوية المطلوبة في مستودع الفواز، واحصل على تنبيه صوتي وشعارات فورية عند انخفاض سعر أي صنف للحد المستهدف.</p>
+            </div>
+
+            <!-- Dashboard Sub Tabs -->
+            <div class="alerts-dashboard-tabs">
+                <button type="button" class="alert-tab-btn active" id="tabAlertsActive" onclick="switchPriceAlertTab('active')">
+                    <i class="fas fa-bell"></i>
+                    <span>المنبهات المفعلة</span>
+                    <span class="tab-count-tag" id="tabActiveCount">0</span>
+                </button>
+                <button type="button" class="alert-tab-btn" id="tabAlertsTriggered" onclick="switchPriceAlertTab('triggered')">
+                    <i class="fas fa-gift"></i>
+                    <span>أسعار منخفضة مكتشفة</span>
+                    <span class="tab-count-tag highlight" id="tabTriggeredCount">0</span>
+                </button>
+                <button type="button" class="alert-tab-btn" id="tabAlertsAddNew" onclick="switchPriceAlertTab('add')">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>إضافة منبه صنف جديد</span>
+                </button>
+                <button type="button" class="alert-tab-btn" id="tabAlertsSettings" onclick="switchPriceAlertTab('settings')">
+                    <i class="fas fa-sliders"></i>
+                    <span>الإعدادات والمحاكاة</span>
+                </button>
+            </div>
+
+            <div class="alerts-dashboard-body">
+                <!-- Tab Pane 1: Active Tracked Alerts -->
+                <div class="alert-tab-pane active" id="paneAlertsActive">
+                    <div class="alerts-pane-header">
+                        <div class="pane-title">
+                            <i class="fas fa-radar"></i> الأصناف المراقبة حالياً في المخزون:
+                        </div>
+                        <button type="button" class="alerts-mini-action-btn" onclick="checkPriceDropAlerts(false)">
+                            <i class="fas fa-rotate"></i> فحص الأسعار الآن
+                        </button>
+                    </div>
+                    <div id="activeAlertsListContainer" class="alerts-cards-list">
+                        <!-- Populated dynamically via renderPriceAlertsDashboard() -->
+                    </div>
+                    <div id="emptyActiveAlertsState" class="empty-alerts-state" style="display: none;">
+                        <i class="fas fa-bell-slash empty-icon"></i>
+                        <h4>لا توجد منبهات أسعار مفعلة حالياً</h4>
+                        <p>يمكنك ضبط تنبيه لأي دواء عبر الضغط على أيقونة الجرس <i class="fas fa-bell"></i> بجانب أي دواء في البروشور.</p>
+                        <button type="button" class="btn-save" onclick="switchPriceAlertTab('add')" style="margin-top: 10px;">
+                            <i class="fas fa-plus"></i> إضافة منبه دواء جديد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Pane 2: Triggered Price Drops -->
+                <div class="alert-tab-pane" id="paneAlertsTriggered" style="display: none;">
+                    <div class="alerts-pane-header success-theme">
+                        <div class="pane-title">
+                            <i class="fas fa-circle-check" style="color: #10b981;"></i> أدوية انخفض سعرها ووصلت للحد المستهدف:
+                        </div>
+                        <button type="button" class="alerts-mini-action-btn" onclick="addAllTriggeredToCart()">
+                            <i class="fas fa-cart-plus"></i> إضافة جميع الأصناف المنخفضة للسلة
+                        </button>
+                    </div>
+                    <div id="triggeredAlertsListContainer" class="alerts-cards-list">
+                        <!-- Populated dynamically -->
+                    </div>
+                    <div id="emptyTriggeredAlertsState" class="empty-alerts-state" style="display: none;">
+                        <i class="fas fa-tags empty-icon"></i>
+                        <h4>لم يتم رصد هبوط جديد بالأسعار حتى الآن</h4>
+                        <p>بمجرد أن ينخفض سعر أي دواء تتابعه في سيرفر المستودع، سيظهر هنا مباشرة مع زر إضافة فورية لسلة الطلبية.</p>
+                    </div>
+                </div>
+
+                <!-- Tab Pane 3: Add New Alert -->
+                <div class="alert-tab-pane" id="paneAlertsAddNew" style="display: none;">
+                    <div class="add-alert-form-card">
+                        <div class="form-group-modern">
+                            <label for="newAlertMedicineSelect"><i class="fas fa-pills"></i> اختر الدواء المطلوب مراقبة سعره:</label>
+                            <select id="newAlertMedicineSelect" class="admin-input" onchange="handleNewAlertMedicineSelectChange()">
+                                <option value="">-- ابحث أو اختر دواء من البروشور --</option>
+                            </select>
+                        </div>
+
+                        <div id="newAlertSelectedMedPreview" class="selected-med-preview-card" style="display: none;">
+                            <div class="preview-row">
+                                <div>
+                                    <h4 id="previewMedName">-</h4>
+                                    <span id="previewMedCompany" class="preview-company-tag">-</span>
+                                </div>
+                                <div class="preview-price-box">
+                                    <span class="lbl">السعر الصافي الحالي:</span>
+                                    <strong id="previewMedPrice" class="val">0 ل.س</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-modern" style="margin-top: 1rem;">
+                            <label for="newAlertTargetPrice"><i class="fas fa-bullseye"></i> السعر المستهدف (نبهني عندما ينخفض السعر إلى أو أقل من):</label>
+                            <div class="input-unit-wrap">
+                                <input type="number" id="newAlertTargetPrice" class="admin-input target-input-highlight" placeholder="أدخل السعر المستهدف" min="100" step="500" oninput="updateNewAlertSavingsPreview()">
+                                <span class="unit-badge">ل.س</span>
+                            </div>
+                        </div>
+
+                        <div class="presets-label">نسب تخفيض سريعة محسوبة من السعر الحالي:</div>
+                        <div class="quick-discount-chips">
+                            <button type="button" class="discount-chip" onclick="setNewAlertPercentage(0.95)">-5% تخفيض</button>
+                            <button type="button" class="discount-chip" onclick="setNewAlertPercentage(0.90)">-10% تخفيض</button>
+                            <button type="button" class="discount-chip" onclick="setNewAlertPercentage(0.85)">-15% تخفيض</button>
+                            <button type="button" class="discount-chip" onclick="setNewAlertPercentage(0.80)">-20% تخفيض</button>
+                        </div>
+
+                        <div class="savings-preview-box" id="newAlertSavingsBox" style="margin-top: 1rem;">
+                            <i class="fas fa-coins"></i>
+                            <span id="newAlertSavingsText">حدد دواء وسعراً مستهدفاً لحساب التوفير</span>
+                        </div>
+
+                        <button type="button" class="btn-save" onclick="saveNewAlertFromTab()" style="width: 100%; justify-content: center; margin-top: 1.25rem; padding: 0.85rem;">
+                            <i class="fas fa-bell"></i> تفعيل منبه هذا الدواء
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab Pane 4: Settings & Live Simulator -->
+                <div class="alert-tab-pane" id="paneAlertsSettings" style="display: none;">
+                    <div class="alert-settings-grid">
+                        <div class="settings-card">
+                            <h4><i class="fas fa-volume-high"></i> التنبيهات الصوتية والإشعارات</h4>
+                            <p>تشغيل صوت تنبيه ناعم عند رصد أي انخفاض في أسعار الأدوية المراقبة.</p>
+                            <div class="setting-toggle-row">
+                                <span>تفعيل نغمة التنبيه:</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="alertSoundToggle" checked onchange="toggleAlertSound(this.checked)">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+                            <button type="button" class="alerts-mini-action-btn" onclick="playAlertChime()" style="margin-top: 8px;">
+                                <i class="fas fa-music"></i> تجربة صوت النغمة
+                            </button>
+                            <div style="margin-top: 12px;">
+                                <button type="button" class="alerts-mini-action-btn" onclick="requestBrowserNotificationPermission()">
+                                    <i class="fas fa-comment-dots"></i> تفعيل إشعارات المتصفح والنظام
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="settings-card simulator-card">
+                            <h4><i class="fas fa-vial-virus" style="color: #0d9488;"></i> مركز محاكاة واختبار التنبيه (Live Price Drop Simulator)</h4>
+                            <p>يتيح لك تجربة سيناريو هبوط السعر فورياً لمشاهدة تفاعل المنبه والإشعار الصوتي وإشعار الشاشة.</p>
+                            
+                            <div class="form-group-modern" style="margin-top: 10px;">
+                                <label for="simMedicineSelect">اختر دواء لاختبار التخفيض عليه:</label>
+                                <select id="simMedicineSelect" class="admin-input"></select>
+                            </div>
+
+                            <div class="form-group-modern" style="margin-top: 8px;">
+                                <label for="simNewPriceInput">السعر المخفض الجديد للاختبار:</label>
+                                <div class="input-unit-wrap">
+                                    <input type="number" id="simNewPriceInput" class="admin-input" placeholder="مثلاً: 25000">
+                                    <span class="unit-badge">ل.س</span>
+                                </div>
+                            </div>
+
+                            <div class="sim-actions-row" style="margin-top: 10px; display: flex; gap: 8px;">
+                                <button type="button" class="btn-save" onclick="simulatePriceDrop()" style="flex: 1; justify-content: center;">
+                                    <i class="fas fa-play"></i> تطبيق محاكاة التخفيض وتشغيل المنبه
+                                </button>
+                                <button type="button" class="btn-cancel" onclick="resetSimulatedPrices()" title="استعادة الأسعار الأصلية">
+                                    <i class="fas fa-undo"></i> استعادة
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-admin-actions" style="justify-content: space-between; border-top: 1px solid var(--border-light); padding-top: 1rem; margin-top: 1rem;">
+                <button type="button" class="clear-cart-link" onclick="clearAllPriceAlerts()" style="color: var(--danger-red);">
+                    <i class="fas fa-trash-alt"></i> مسح جميع المنبهات
+                </button>
+                <button type="button" class="btn-cancel" onclick="closePriceAlertsModal()">إغلاق</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Printable Invoice Template (Hidden until print) -->
     <div id="printableInvoiceArea" class="printable-invoice-area" style="display: none;">
         <!-- Generated dynamically during print -->
@@ -612,6 +1077,19 @@
             </div>
         </div>
     </footer>
+
+    <!-- Floating Quick Drag & Drop Bar (Visible when dragging an item) -->
+    <div class="floating-drag-drop-bar" id="floatingDragDropBar">
+        <div class="drop-bar-content">
+            <div class="drop-bar-icon-wrap">
+                <i class="fas fa-cart-arrow-down"></i>
+            </div>
+            <div class="drop-bar-info">
+                <strong>أفلت بطاقة الدواء هنا 🛒</strong>
+                <span>للإضافة الفورية إلى سلة طلبيتك</span>
+            </div>
+        </div>
+    </div>
 
     <!-- Gemini AI Floating Assistant Button -->
     <button class="gemini-float-btn" id="geminiFloatBtn" onclick="toggleGeminiChat()">

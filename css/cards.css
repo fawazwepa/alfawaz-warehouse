@@ -18,54 +18,83 @@
     border: 1px solid var(--border-light);
     box-shadow: var(--shadow-md);
     overflow: hidden;
-    cursor: pointer;
+    cursor: grab;
+    user-select: none;
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
                 box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-                border-color 0.25s ease;
+                border-color 0.25s ease,
+                opacity 0.2s ease;
     display: flex;
     flex-direction: column;
 }
 
-.medicine-card:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-xl);
-    border-color: var(--primary-light);
+.medicine-card:active {
+    cursor: grabbing;
 }
 
-/* Layer 2: Semi-Transparent Manufacturer Watermark Logo */
-.card-watermark {
-    position: absolute;
-    inset: 0;
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: 65% auto;
-    opacity: 0.06;
-    pointer-events: none;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    filter: grayscale(20%);
+.medicine-card.is-dragging {
+    opacity: 0.45;
+    transform: scale(0.96) rotate(-1deg);
+    border: 2px dashed var(--primary-main);
+    box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.15);
 }
 
-.medicine-card:hover .card-watermark {
-    opacity: 0.12;
-    transform: scale(1.05);
-}
-
-/* Layer 3: Foreground Content */
-.card-content {
-    position: relative;
-    z-index: 2;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-/* Card Header: Brand & Bonus */
+/* Card Header: Brand, Drag Chip & Bonus */
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.75rem;
+    gap: 0.35rem;
+}
+
+.card-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.card-drag-chip {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--primary-deep);
+    background-color: rgba(45, 106, 79, 0.08);
+    border: 1px dashed rgba(45, 106, 79, 0.35);
+    padding: 0.2rem 0.55rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    cursor: grab;
+    transition: all 0.2s ease;
+}
+
+.card-drag-chip:hover {
+    background-color: var(--primary-mint);
+    border-color: var(--primary-main);
+    color: var(--primary-deep);
+    transform: translateY(-1px);
+}
+
+.card-drag-chip:active {
+    cursor: grabbing;
+}
+
+.table-drag-grip {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin-left: 0.4rem;
+    cursor: grab;
+    transition: color 0.2s;
+}
+
+.table-data-row:hover .table-drag-grip {
+    color: var(--primary-main);
+}
+
+.table-data-row.is-dragging {
+    opacity: 0.4;
+    background-color: var(--primary-mint) !important;
 }
 
 .card-brand {
