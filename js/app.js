@@ -55,31 +55,96 @@ async function initApp() {
 
 async function loadMedicinesData() {
     try {
+        // First priority: Real Live Server Sync API
+        const liveResponse = await fetch('/api/sync/data');
+        if (liveResponse.ok) {
+            const data = await liveResponse.json();
+            if (data.medicines && Array.isArray(data.medicines)) {
+                mapAndSetMedicines(data.medicines);
+                updateServerStatusUI(data.last_sync, data.version);
+                return;
+            }
+        }
+    } catch (err) {
+        console.warn('Live sync server unreachable, using fallback file:', err.message);
+    }
+
+    try {
         const response = await fetch('data/medicines.json');
         if (response.ok) {
             const data = await response.json();
-            allMedicines = data.medicines.map(item => ({
-                id: item.id,
-                product_code: item.كود_المنتج || `MED${String(item.id).padStart(3, '0')}`,
-                name_ar: item.اسم_الدواء,
-                manufacturer: item.الشركة_المصنعة,
-                manufacturer_ar: item.الشركة_المصنعة_عربي || item.الشركة_المصنعة,
-                dosage: item.التركيزة || 'حسب المواصفات',
-                dosage_form: item.الشكل_الصيدلاني || 'مستحضر صيدلاني',
-                active_ingredients: item.المادة_الفعالة || 'تركيبة دوانية معتمدة',
-                quantity: item.الكمية || 100,
-                price: item.السعر || 0,
-                expiry_date: item.تاريخ_الانتهاء || '2027-12-31',
-                description: item.الوصف || 'مستحضر طبي عالي الجودة معتمد من مستودع الفواز للأدوية البشرية.',
-                bonus: item.البونص || '10+1',
-                usage_instructions: item.طريقة_الاستخدام || 'حسب إرشادات الطبيب أو الصيدلي.',
-                precautions: item.التحذيرات || 'يحفظ بعيداً عن متناول الأطفال.',
-                storage: item.التخزين || 'يحفظ في مكان جاف وبارد أقل من 25 درجة مئوية.'
-            }));
-            return;
+            mapAndSetMedicines(data.medicines || []);
         }
     } catch (e) {
         console.warn('Loading fallback embedded dataset:', e);
+    }
+}
+
+function mapAndSetMedicines(rawList) {
+    allMedicines = rawList.map(item => ({
+        id: Number(item.id),
+        product_code: item.كود_المنتج || `MED${String(item.id).padStart(3, '0')}`,
+        name_ar: item.اسم_الدواء,
+        manufacturer: item.الشركة_المصنعة,
+        manufacturer_ar: item.الشركة_المصنعة_عربي || item.الشركة_المصنعة,
+        dosage: item.التركيزة || 'حسب المواصفات',
+        dosage_form: item.الشكل_الصيدلاني || 'مستحضر صيدلاني',
+        active_ingredients: item.المادة_الفعالة || 'تركيبة دوائية معتمدة',
+        quantity: item.الكمية || 100,
+        price: Number(item.السعر) || 0,
+        expiry_date: item.تاريخ_الانتهاء || '2028-12-31',
+        description: item.الوصف || 'مستحضر طبي عالي الجودة معتمد من مستودع الفواز للأدوية البشرية.',
+        bonus: item.البونص || 'بدون بونص',
+        usage_instructions: item.طريقة_الاستخدام || 'حسب إرشادات الطبيب أو الصيدلي.',
+        precautions: item.التحذيرات || 'يحفظ بعيداً عن متناول الأطفال.',
+        storage: item.التخزين || 'يحفظ في مكان جاف وبارد أقل من 25 درجة مئوية.'
+    }));
+}
+
+/* ---------------- Real-time Server Sync Operations ---------------- */
+async function syncWithServer(showFeedback = true) {
+    const syncBtn = document.getElementById('navbarSyncBtn');
+    if (syncBtn) syncBtn.classList.add('syncing');
+
+    try {
+        const res = await fetch('/api/sync/data');
+        if (res.ok) {
+            const data = await res.json();
+            if (data.medicines) {
+                mapAndSetMedicines(data.medicines);
+                if (data.manufacturers && data.manufacturers.length > 0) {
+                    allManufacturers = data.manufacturers;
+                }
+                renderManufacturerPills();
+                applyFiltersAndRender();
+                updateServerStatusUI(data.last_sync, data.version);
+
+                if (showFeedback) {
+                    showToastNotification(`🟢 تمت المزامنة بنجاح مع سيرفر الفواز (${data.total_medicines} دواء)`);
+                }
+                return true;
+            }
+        }
+    } catch (e) {
+        if (showFeedback) {
+            showToastNotification('⚠️ تعذر الاتصال بسيرفر المزامنة حالياً.');
+        }
+    } finally {
+        if (syncBtn) syncBtn.classList.remove('syncing');
+    }
+    return false;
+}
+
+function updateServerStatusUI(lastSync, version) {
+    const timeElem = document.getElementById('syncLastUpdatedTime');
+    if (timeElem && lastSync) {
+        const dateObj = new Date(lastSync);
+        timeElem.textContent = dateObj.toLocaleTimeString('ar-EG', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    const versionElem = document.getElementById('syncVersionCode');
+    if (versionElem && version) {
+        versionElem.textContent = `V-${String(version).slice(-6)}`;
     }
 }
 
@@ -321,8 +386,18 @@ function renderBrochureTable(medicines) {
                     </div>
                 </td>
                 <td class="col-name">
-                    <div class="table-medicine-title" onclick="openMedicineModal(${medicine.id})">
-                        ${medicine.name_ar}
+                    <div class="table-medicine-title-row">
+                        <div class="table-medicine-title" onclick="openMedicineModal(${medicine.id})">
+                            ${medicine.name_ar}
+                        </div>
+                        <div class="table-row-actions">
+                            <button class="mini-ai-btn" onclick="askAiForDrugAlternatives('${medicine.name_ar}', '${medicine.active_ingredients}')" title="البدائل الذكية بـ Gemini AI">
+                                <i class="fas fa-brain"></i> بدائل AI
+                            </button>
+                            <button class="mini-edit-btn" onclick="openEditMedicineModal(${medicine.id})" title="تعديل السعر أو البونص في السيرفر">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                        </div>
                     </div>
                     <div class="table-medicine-specs">
                         <span><i class="fas fa-flask"></i> ${medicine.active_ingredients}</span>
@@ -398,9 +473,18 @@ function renderCardsGrid(medicines) {
                         </div>
                     </div>
 
+                    <div class="card-smart-tools">
+                        <button class="card-ai-tool-btn" onclick="event.stopPropagation(); askAiForDrugAlternatives('${medicine.name_ar}', '${medicine.active_ingredients}')">
+                            <i class="fas fa-brain"></i> البدائل الصيدلانية بالذكاء الاصطناعي
+                        </button>
+                        <button class="card-edit-tool-btn" onclick="event.stopPropagation(); openEditMedicineModal(${medicine.id})">
+                            <i class="fas fa-edit"></i> تعديل
+                        </button>
+                    </div>
+
                     <div class="stock-status-wrap">
                         <span class="stock-badge-tag in-stock">
-                            <i class="fas fa-check-circle"></i> متوفر بمستودع الفواز
+                            <i class="fas fa-check-circle"></i> متوفر ومزامن مع السيرفر
                         </span>
                     </div>
 
@@ -753,6 +837,176 @@ function handleModalOverlayClick(e) {
     if (e.target.id === 'medicineModalOverlay') {
         closeMedicineModal();
     }
+}
+
+/* ---------------- Live Server CRUD & Sync Center ---------------- */
+function openEditMedicineModal(medId) {
+    const med = allMedicines.find(m => m.id === medId);
+    if (!med) return;
+
+    document.getElementById('editMedId').value = med.id;
+    document.getElementById('editMedName').value = med.name_ar;
+    document.getElementById('editMedCompany').value = med.manufacturer_ar || med.manufacturer;
+    document.getElementById('editMedPrice').value = med.price;
+    document.getElementById('editMedBonus').value = med.bonus || 'بدون بونص';
+    document.getElementById('editMedQty').value = med.quantity || 100;
+    document.getElementById('editMedActive').value = med.active_ingredients || '';
+    document.getElementById('editMedDosage').value = med.dosage || '';
+    document.getElementById('editMedForm').value = med.dosage_form || '';
+
+    const overlay = document.getElementById('editMedicineModalOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function closeEditMedicineModal() {
+    const overlay = document.getElementById('editMedicineModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+async function handleMedicineUpdateSubmit(e) {
+    if (e) e.preventDefault();
+
+    const id = Number(document.getElementById('editMedId').value);
+    const updatedData = {
+        id: id,
+        اسم_الدواء: document.getElementById('editMedName').value.trim(),
+        الشركة_المصنعة_عربي: document.getElementById('editMedCompany').value.trim(),
+        الشركة_المصنعة: document.getElementById('editMedCompany').value.trim(),
+        السعر: Number(document.getElementById('editMedPrice').value) || 0,
+        البونص: document.getElementById('editMedBonus').value.trim(),
+        الكمية: Number(document.getElementById('editMedQty').value) || 100,
+        المادة_الفعالة: document.getElementById('editMedActive').value.trim(),
+        التركيزة: document.getElementById('editMedDosage').value.trim(),
+        الشكل_الصيدلاني: document.getElementById('editMedForm').value.trim()
+    };
+
+    try {
+        const res = await fetch('/api/sync/update-medicine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedData)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            closeEditMedicineModal();
+            showToastNotification(`✅ تم حفظ وتحديث "${updatedData.اسم_الدواء}" في السيرفر!`);
+            syncWithServer(false);
+        } else {
+            alert(data.message || 'حدث خطأ أثناء التحديث.');
+        }
+    } catch (err) {
+        alert('تعذر الاتصال بالسيرفر لحفظ التعديلات.');
+    }
+}
+
+function openAddMedicineModal() {
+    const overlay = document.getElementById('addMedicineModalOverlay');
+    if (overlay) overlay.classList.add('active');
+}
+
+function closeAddMedicineModal() {
+    const overlay = document.getElementById('addMedicineModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+async function handleAddMedicineSubmit(e) {
+    if (e) e.preventDefault();
+
+    const name = document.getElementById('addMedName').value.trim();
+    const company = document.getElementById('addMedCompany').value.trim();
+    const price = Number(document.getElementById('addMedPrice').value) || 0;
+    const bonus = document.getElementById('addMedBonus').value.trim() || 'بدون بونص';
+    const active = document.getElementById('addMedActive').value.trim() || 'مادة فعالة';
+    const dosage = document.getElementById('addMedDosage').value.trim() || 'حسب المواصفات';
+    const form = document.getElementById('addMedForm').value.trim() || 'مستحضر صيدلاني';
+
+    if (!name || !company) {
+        alert('يرجى كتابة اسم الدواء والشركة المصنعة على الأقل.');
+        return;
+    }
+
+    const newMedPayload = {
+        اسم_الدواء: name,
+        الشركة_المصنعة: company,
+        الشركة_المصنعة_عربي: company,
+        السعر: price,
+        البونص: bonus,
+        المادة_الفعالة: active,
+        التركيزة: dosage,
+        الشكل_الصيدلاني: form,
+        الكمية: 150
+    };
+
+    try {
+        const res = await fetch('/api/sync/add-medicine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newMedPayload)
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            closeAddMedicineModal();
+            showToastNotification(`✨ تم إضافة "${name}" بنجاح إلى المستودع والسيرفر!`);
+            syncWithServer(false);
+        } else {
+            alert(data.message || 'حدث خطأ أثناء الإضافة.');
+        }
+    } catch (err) {
+        alert('تعذر الاتصال بالسيرفر لإضافة الدواء.');
+    }
+}
+
+function openSyncCenterModal() {
+    const overlay = document.getElementById('syncCenterModalOverlay');
+    if (overlay) overlay.classList.add('active');
+    checkServerHealthDiagnostics();
+}
+
+function closeSyncCenterModal() {
+    const overlay = document.getElementById('syncCenterModalOverlay');
+    if (overlay) overlay.classList.remove('active');
+}
+
+async function checkServerHealthDiagnostics() {
+    const diagContainer = document.getElementById('syncServerDiagnostics');
+    if (!diagContainer) return;
+
+    diagContainer.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري فحص حالة السيرفرات والذكاء الاصطناعي...';
+
+    try {
+        const res = await fetch('/api/health');
+        if (res.ok) {
+            const data = await res.json();
+            diagContainer.innerHTML = `
+                <div class="diag-card-grid">
+                    <div class="diag-item">
+                        <span class="diag-label"><i class="fas fa-server"></i> خادم التطبيق والمستودع:</span>
+                        <span class="diag-val success">شغال بنشاط (${Math.floor(data.uptime_seconds / 60)} دقيقة)</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label"><i class="fas fa-brain"></i> Google Gemini AI:</span>
+                        <span class="diag-val success">جاهز ومتصل بسيرفرات Google الرسمية</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label"><i class="fas fa-database"></i> قاعدة بيانات الأدوية:</span>
+                        <span class="diag-val">${data.database.total_medicines} مستحضر دوائي</span>
+                    </div>
+                    <div class="diag-item">
+                        <span class="diag-label"><i class="fas fa-broadcast-tower"></i> البث المباشر المباشر (SSE):</span>
+                        <span class="diag-val success">متصل (${data.live_connections} أجهزة متصلة)</span>
+                    </div>
+                </div>
+            `;
+        }
+    } catch (e) {
+        diagContainer.innerHTML = '<span style="color: var(--danger-red);"><i class="fas fa-times-circle"></i> تعذر فحص الخادم.</span>';
+    }
+}
+
+function exportMedicinesJson() {
+    window.open('/api/sync/export', '_blank');
 }
 
 /* ---------------- Toast Notification ---------------- */

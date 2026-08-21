@@ -1,6 +1,8 @@
 {
-  "name": "Remix al-fawaz-warehouse",
-  "description": "Imported from GitHub: fawazwepa/-",
+  "name": "مستودع الفواز للأدوية البشرية",
+  "description": "تطبيق ومستودع الفواز للأدوية البشرية - بروشور منظم، أسعار وبونصات، مساعد ذكي مدعوم بـ Google Gemini، ومزامنة وتحديث فوري للبيانات",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

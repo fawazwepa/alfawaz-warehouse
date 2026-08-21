@@ -275,11 +275,85 @@
     transform: scale(1.05);
 }
 
-.gemini-typing-indicator {
+.gemini-server-status {
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+}
+
+.gemini-server-status.online {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.4);
+}
+
+.gemini-server-status.offline {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+/* Voice Input Button & Recording Wave Animation */
+.gemini-voice-btn {
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border-light);
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.3rem;
-    padding: 0.5rem;
-    color: var(--text-muted);
-    font-size: 0.8rem;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.gemini-voice-btn:hover {
+    background-color: var(--primary-mint);
+    color: var(--primary-deep);
+    border-color: var(--primary-light);
+}
+
+.gemini-voice-btn.recording {
+    background-color: #ef4444 !important;
+    color: #ffffff !important;
+    border-color: #dc2626 !important;
+    animation: voiceRecordPulse 1.2s infinite;
+}
+
+@keyframes voiceRecordPulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.gemini-list-item {
+    margin: 4px 0;
+    padding-right: 6px;
+    line-height: 1.5;
+}
+
+.gemini-msg-body code {
+    background: rgba(0, 0, 0, 0.06);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.85em;
+}
+
+.gemini-msg.user .gemini-msg-body code {
+    background: rgba(255, 255, 255, 0.2);
 }

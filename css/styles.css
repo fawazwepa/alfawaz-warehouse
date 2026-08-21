@@ -1473,3 +1473,378 @@ body {
         width: 100%;
     }
 }
+
+/* =============================================================
+   Real-Time Server Synchronization & Smart Management Styles
+   ============================================================= */
+
+/* Live Sync Pill in Top Bar */
+.live-sync-pill {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+    border: 1px solid rgba(74, 222, 128, 0.35);
+    font-size: 0.725rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    margin-right: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+/* Navbar Action Pills */
+.nav-action-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.825rem;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.nav-action-pill.sync-btn {
+    background-color: var(--primary-mint);
+    color: var(--primary-deep);
+    border: 1px solid var(--primary-light);
+}
+
+.nav-action-pill.sync-btn:hover {
+    background-color: var(--primary-deep);
+    color: #ffffff;
+}
+
+.nav-action-pill.sync-btn.syncing i {
+    animation: fa-spin 1s infinite linear;
+}
+
+.nav-action-pill.server-btn {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.nav-action-pill.server-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-action-pill.add-btn {
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-amber));
+    color: #ffffff;
+}
+
+.nav-action-pill.add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+}
+
+/* Table Quick Action Buttons */
+.table-medicine-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.table-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.mini-ai-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff;
+    border: none;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: opacity 0.2s;
+}
+
+.mini-ai-btn:hover {
+    opacity: 0.9;
+}
+
+.mini-edit-btn {
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    padding: 2px 7px;
+    border-radius: var(--radius-sm);
+    font-size: 0.72rem;
+    cursor: pointer;
+}
+
+.mini-edit-btn:hover {
+    background-color: var(--primary-mint);
+    color: var(--primary-deep);
+}
+
+/* Card Smart Tools */
+.card-smart-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.6rem 0;
+}
+
+.card-ai-tool-btn {
+    flex: 1;
+    background: rgba(79, 70, 229, 0.08);
+    color: #4f46e5;
+    border: 1px dashed rgba(79, 70, 229, 0.4);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: all 0.2s;
+}
+
+.card-ai-tool-btn:hover {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+.card-edit-tool-btn {
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.card-edit-tool-btn:hover {
+    background-color: var(--primary-mint);
+    color: var(--primary-deep);
+}
+
+/* Smart AI Cart Analysis Button in Cart Drawer */
+.ai-analyze-cart-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #2563eb);
+    color: #ffffff;
+    border: none;
+    padding: 0.85rem 1rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+    box-shadow: 0 4px 15px rgba(79, 70, 229, 0.35);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.ai-analyze-cart-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(79, 70, 229, 0.5);
+}
+
+/* Modal AI Action Bar */
+.modal-ai-action-bar {
+    margin-bottom: 1.25rem;
+}
+
+.modal-ai-btn {
+    width: 100%;
+    background: linear-gradient(135deg, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+    border: 1.5px solid #4f46e5;
+    color: #4f46e5;
+    padding: 0.75rem 1rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.875rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+}
+
+.modal-ai-btn:hover {
+    background: #4f46e5;
+    color: #ffffff;
+}
+
+/* Admin CRUD Modals */
+.admin-modal {
+    max-width: 650px;
+}
+
+.admin-form {
+    padding: 1.25rem 1.5rem;
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (max-width: 600px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modal-admin-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-light);
+}
+
+.btn-cancel {
+    background-color: var(--bg-muted);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-light);
+    padding: 0.6rem 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.btn-save-server {
+    background: linear-gradient(135deg, var(--primary-deep), var(--primary-main));
+    color: #ffffff;
+    border: none;
+    padding: 0.6rem 1.4rem;
+    border-radius: var(--radius-md);
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.btn-save-server:hover {
+    opacity: 0.95;
+}
+
+/* Sync Center Diagnostics Modal */
+.sync-modal-body {
+    padding: 1.5rem;
+}
+
+.sync-diagnostics-box {
+    background-color: #f8fafc;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.diag-card-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+}
+
+@media (max-width: 550px) {
+    .diag-card-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.diag-item {
+    background-color: #ffffff;
+    padding: 0.75rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.diag-label {
+    font-size: 0.775rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.diag-val {
+    font-size: 0.875rem;
+    font-weight: 800;
+    color: var(--text-primary);
+}
+
+.diag-val.success {
+    color: #16a34a;
+}
+
+.sync-quick-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 550px) {
+    .sync-quick-actions {
+        grid-template-columns: 1fr;
+    }
+}
+
+.sync-action-card-btn {
+    background-color: #ffffff;
+    border: 1.5px solid var(--border-light);
+    padding: 1rem 0.75rem;
+    border-radius: var(--radius-md);
+    text-align: center;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.825rem;
+    color: var(--primary-deep);
+    transition: all 0.2s;
+}
+
+.sync-action-card-btn i {
+    font-size: 1.5rem;
+    color: var(--primary-main);
+}
+
+.sync-action-card-btn:hover {
+    border-color: var(--primary-main);
+    background-color: var(--primary-mint);
+    transform: translateY(-2px);
+}
+
+.sync-meta-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border-light);
+}

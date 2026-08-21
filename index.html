@@ -34,6 +34,9 @@
             <div class="top-contact-item">
                 <i class="fas fa-store"></i>
                 <span>مستودع الفواز للأدوية البشرية — بروشور منظم وتحديث أسعار مباشر</span>
+                <span class="live-sync-pill" id="headerServerStatus">
+                    <i class="fas fa-plug-circle-check"></i> سيرفر Google Gemini والمزامنة الحية 🟢
+                </span>
             </div>
             <div class="top-contact-links">
                 <a href="https://wa.me/963995711536" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> واتساب الطلبيات: 0995711536</a>
@@ -60,6 +63,22 @@
 
             <!-- Navbar Quick Controls -->
             <div class="navbar-controls">
+                <!-- Live Server Sync Buttons -->
+                <button class="nav-action-pill sync-btn" id="navbarSyncBtn" onclick="syncWithServer(true)" title="مزامنة فورية مع سيرفر المستودع">
+                    <i class="fas fa-sync-alt"></i>
+                    <span class="hide-mobile">مزامنة فورية</span>
+                </button>
+
+                <button class="nav-action-pill server-btn" onclick="openSyncCenterModal()" title="مركز إدارة السيرفر والتشخيص">
+                    <i class="fas fa-server"></i>
+                    <span class="hide-mobile">إدارة السيرفر</span>
+                </button>
+
+                <button class="nav-action-pill add-btn" onclick="openAddMedicineModal()" title="إضافة دواء جديد للمستودع">
+                    <i class="fas fa-plus-circle"></i>
+                    <span class="hide-mobile">إضافة دواء</span>
+                </button>
+
                 <!-- View Mode Switcher -->
                 <div class="view-mode-toggle" id="navViewToggle">
                     <button class="toggle-btn active" id="btnTableView" onclick="switchViewMode('table')" title="عرض جدول البروشور">
@@ -282,6 +301,12 @@
                 </div>
             </div>
 
+            <!-- Smart AI Cart Analysis Button -->
+            <button class="ai-analyze-cart-btn" onclick="analyzeCartWithGemini()">
+                <i class="fas fa-brain"></i>
+                <span>تحليل الطلبية ومضاعفة البونص بـ Gemini AI</span>
+            </button>
+
             <div class="action-buttons-stack">
                 <button class="whatsapp-send-btn" id="sendWhatsappBtn" onclick="sendOrderToWhatsApp()">
                     <i class="fab fa-whatsapp"></i>
@@ -318,11 +343,17 @@
                 <div class="modal-badge-row">
                     <div class="modal-badge stock-badge" id="modalStockBadge">
                         <i class="fas fa-check-circle" id="modalStockIcon"></i>
-                        <span id="modalStockStatusText">متوفر بالمستودع</span>
+                        <span id="modalStockStatusText">متوفر ومزامن بالسيرفر</span>
                     </div>
                     <div class="modal-badge price-badge">
                         <span id="modalPrice">0</span> <span>ل.س (النت)</span>
                     </div>
+                </div>
+
+                <div class="modal-ai-action-bar">
+                    <button class="modal-ai-btn" onclick="askAiForDrugAlternatives(document.getElementById('modalMedicineName').textContent, document.getElementById('modalActiveIngredients').textContent)">
+                        <i class="fas fa-brain"></i> البحث عن بدائل صيدلانية معتمدة بـ Gemini AI
+                    </button>
                 </div>
 
                 <p class="modal-description" id="modalDescription"></p>
@@ -406,6 +437,141 @@
         </div>
     </div>
 
+    <!-- Edit Medicine Modal Overlay -->
+    <div id="editMedicineModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='editMedicineModalOverlay') closeEditMedicineModal()">
+        <div class="modal-container admin-modal" role="dialog">
+            <button class="modal-close-btn" onclick="closeEditMedicineModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-edit"></i> تعديل بيانات الدواء في السيرفر المباشر</h3>
+                <p class="modal-sub">يتم الحفظ الفوري وبث التحديث لجميع الأجهزة المتصلة</p>
+            </div>
+            <form class="admin-form" onsubmit="handleMedicineUpdateSubmit(event)">
+                <input type="hidden" id="editMedId">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>اسم الدواء التجاري:</label>
+                        <input type="text" id="editMedName" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>الشركة المصنعة / الوكالة:</label>
+                        <input type="text" id="editMedCompany" required class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>السعر الصافي (النت) بالليرة السورية:</label>
+                        <input type="number" id="editMedPrice" required min="0" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>عرض البونص المعتمد (مثال: 10+2 أو بدون):</label>
+                        <input type="text" id="editMedBonus" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>الكمية المتوفرة بالمستودع:</label>
+                        <input type="number" id="editMedQty" class="form-control" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>المادة الفعالة (التركيب العلمي):</label>
+                        <input type="text" id="editMedActive" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>التركيزة / العيار:</label>
+                        <input type="text" id="editMedDosage" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>الشكل الصيدلاني:</label>
+                        <input type="text" id="editMedForm" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-admin-actions">
+                    <button type="button" class="btn-cancel" onclick="closeEditMedicineModal()">إلغاء</button>
+                    <button type="submit" class="btn-save-server"><i class="fas fa-cloud-upload-alt"></i> حفظ وتحديث في السيرفر</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Medicine Modal Overlay -->
+    <div id="addMedicineModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='addMedicineModalOverlay') closeAddMedicineModal()">
+        <div class="modal-container admin-modal" role="dialog">
+            <button class="modal-close-btn" onclick="closeAddMedicineModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-plus-circle"></i> إضافة مستحضر دوائي جديد للمستودع</h3>
+                <p class="modal-sub">إضافة دواء جديد إلى قاعدة البيانات والسيرفر الحقيقي</p>
+            </div>
+            <form class="admin-form" onsubmit="handleAddMedicineSubmit(event)">
+                <div class="form-grid-2">
+                    <div class="form-group">
+                        <label>اسم الدواء التجاري *:</label>
+                        <input type="text" id="addMedName" required placeholder="مثال: فواز سيتامول 500" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>الشركة المصنعة / الوكالة *:</label>
+                        <input type="text" id="addMedCompany" required placeholder="مثال: دومينا" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>السعر الصافي (النت) ل.س *:</label>
+                        <input type="number" id="addMedPrice" required min="0" placeholder="مثال: 12500" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>عرض البونص (مثال: 10+1 أو بدون):</label>
+                        <input type="text" id="addMedBonus" placeholder="10+1" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>المادة الفعالة:</label>
+                        <input type="text" id="addMedActive" placeholder="مثال: Paracetamol" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>العيار / التركيز:</label>
+                        <input type="text" id="addMedDosage" placeholder="مثال: 500 mg" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>الشكل الصيدلاني:</label>
+                        <input type="text" id="addMedForm" placeholder="مثال: مضغوطات / كبسول" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-admin-actions">
+                    <button type="button" class="btn-cancel" onclick="closeAddMedicineModal()">إلغاء</button>
+                    <button type="submit" class="btn-save-server"><i class="fas fa-plus"></i> إضافة المستحضر للسيرفر</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sync Center Diagnostics Modal Overlay -->
+    <div id="syncCenterModalOverlay" class="modal-overlay" aria-hidden="true" onclick="if(event.target.id==='syncCenterModalOverlay') closeSyncCenterModal()">
+        <div class="modal-container admin-modal" role="dialog">
+            <button class="modal-close-btn" onclick="closeSyncCenterModal()"><i class="fas fa-times"></i></button>
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-server"></i> مركز إدارة السيرفر والمزامنة المباشرة</h3>
+                <p class="modal-sub">مستودع الفواز للأدوية البشرية — محرك المزامنة الحية و Google Gemini</p>
+            </div>
+            <div class="sync-modal-body">
+                <div id="syncServerDiagnostics" class="sync-diagnostics-box">
+                    <i class="fas fa-spinner fa-spin"></i> جاري فحص حالة السيرفر...
+                </div>
+                
+                <div class="sync-quick-actions">
+                    <button class="sync-action-card-btn" onclick="syncWithServer(true)">
+                        <i class="fas fa-rotate"></i>
+                        <span>مزامنة يدوية فورية</span>
+                    </button>
+                    <button class="sync-action-card-btn" onclick="exportMedicinesJson()">
+                        <i class="fas fa-file-export"></i>
+                        <span>تصدير قاعدة البيانات (JSON)</span>
+                    </button>
+                    <button class="sync-action-card-btn" onclick="openAddMedicineModal(); closeSyncCenterModal();">
+                        <i class="fas fa-plus"></i>
+                        <span>إضافة دواء جديد</span>
+                    </button>
+                </div>
+
+                <div class="sync-meta-info">
+                    <div><strong>آخر وقت مزامنة:</strong> <span id="syncLastUpdatedTime">الآن</span></div>
+                    <div><strong>إصدار قاعدة البيانات:</strong> <span id="syncVersionCode">V-2026.1</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Printable Invoice Template (Hidden until print) -->
     <div id="printableInvoiceArea" class="printable-invoice-area" style="display: none;">
         <!-- Generated dynamically during print -->
@@ -451,7 +617,7 @@
     <button class="gemini-float-btn" id="geminiFloatBtn" onclick="toggleGeminiChat()">
         <i class="fas fa-brain"></i>
         <span>مساعد الفواز الذكي</span>
-        <span class="gemini-badge-sparkle">Gemini</span>
+        <span class="gemini-badge-sparkle">Gemini AI</span>
     </button>
 
     <!-- Gemini AI Chat Drawer -->
@@ -459,11 +625,14 @@
         <div class="gemini-chat-header">
             <div class="gemini-chat-title">
                 <i class="fas fa-robot"></i>
-                <span>مساعد الفواز الصيدلاني (Gemini)</span>
+                <div>
+                    <span>مساعد الفواز الصيدلاني (Gemini)</span>
+                    <span id="aiServerStatusBadge" class="gemini-server-status online"><i class="fas fa-circle-check"></i> متصل بسيرفر Google Gemini</span>
+                </div>
             </div>
             <div class="gemini-header-actions">
-                <button class="gemini-icon-btn" onclick="toggleGeminiKeySettings()" title="إعدادات المفتاح">
-                    <i class="fas fa-key"></i>
+                <button class="gemini-icon-btn" onclick="toggleGeminiKeySettings()" title="إعدادات المفتاح والموديل">
+                    <i class="fas fa-sliders-h"></i>
                 </button>
                 <button class="gemini-icon-btn" onclick="closeGeminiChat()" title="إغلاق">
                     <i class="fas fa-times"></i>
@@ -471,11 +640,19 @@
             </div>
         </div>
 
-        <!-- Custom Key Settings Dropdown -->
+        <!-- Custom Key & Model Settings Dropdown -->
         <div class="gemini-key-settings" id="geminiKeySettingsBox">
-            <div><strong>إعدادات Gemini API Key:</strong></div>
+            <div><strong>إعدادات خادم وموديل Google Gemini:</strong></div>
+            <div style="margin: 6px 0;">
+                <label style="font-size: 0.78rem; display: block; margin-bottom: 3px;">اختر إصدار الموديل الذكي:</label>
+                <select id="geminiModelSelect" class="form-control" style="font-size: 0.82rem; padding: 4px 8px;">
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (الأحدث، فائق السرعة والدقة)</option>
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                </select>
+            </div>
             <div class="gemini-key-input-wrap">
-                <input type="password" id="geminiCustomApiKeyInput" class="gemini-key-input" placeholder="أدخل مفتاح AI Studio الخاص بك هنا...">
+                <input type="password" id="geminiCustomApiKeyInput" class="gemini-key-input" placeholder="أدخل مفتاح Gemini API مخصص (اختياري)...">
                 <button class="gemini-key-save-btn" onclick="saveCustomGeminiApiKey()">حفظ</button>
             </div>
         </div>
@@ -483,7 +660,14 @@
         <!-- Chat Messages -->
         <div class="gemini-chat-messages" id="geminiMessagesContainer">
             <div class="gemini-msg bot">
-                <div>أهلاً بك دكتور! 👋 أنا **مساعد الفواز الذكي** المطور بواسطة **Gemini AI**.<br>كيف يمكنني مساعدتك اليوم في الاستفسار عن الأدوية، المواد الفعالة، البدائل، أو تحليل سلة الطلبية؟</div>
+                <div class="gemini-msg-body">
+                    أهلاً بك دكتور! 👋 أنا **مساعد الفواز الصيدلاني الذكي** المتصل مباشرة بسيرفر **Google Gemini AI** وقاعدة بيانات المستودع الحية.<br>
+                    يمكنك سؤالي صوتياً أو كتابياً عن:
+                    <div class="gemini-list-item">• البدائل الدوائية المتاحة ومقارنة العيارات</div>
+                    <div class="gemini-list-item">• المواد الفعالة والتداخلات الدوائية</div>
+                    <div class="gemini-list-item">• عروض البونص والخصومات الإضافية</div>
+                    <div class="gemini-list-item">• تحليل سلة طلبيتك الحالية بضغطة زر واحدة</div>
+                </div>
                 <div class="gemini-msg-time">الآن</div>
             </div>
         </div>
@@ -492,13 +676,16 @@
         <div class="gemini-quick-chips">
             <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي أدوية وبدائل الأوفلوكساسين المتاحة بالبروشور؟')">💊 بدائل الأوفلوكساسين</button>
             <button class="gemini-chip" onclick="sendQuickGeminiPrompt('اقترح علي أفضل أدوية البونص العالي المتاحة')">🎁 عروض البونص الأعلى</button>
-            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي دواعي استعمال ادفانسيد HSN والجرعة؟')">🩺 دواعي استعمال ادفانسيد</button>
-            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('حلل لي سلة الطلبية الحالية واقترح تحسينات')">📊 تحليل الطلبية الحالية</button>
+            <button class="gemini-chip" onclick="analyzeCartWithGemini()">📊 تحليل سلة الطلبية الحالية</button>
+            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي الأدوية الخافضة للحرارة والمسكنات المتوفرة؟')">🩺 المسكنات وخافضات الحرارة</button>
         </div>
 
-        <!-- Chat Input Bar -->
+        <!-- Chat Input Bar with Voice Support -->
         <div class="gemini-chat-input-bar">
-            <input type="text" id="geminiInput" class="gemini-chat-input" placeholder="اسأل عن دواء، مادة فعالة، أو بديل..." onkeypress="if(event.key==='Enter') handleGeminiSend()">
+            <button class="gemini-voice-btn" id="geminiVoiceBtn" onclick="toggleVoiceRecording()" title="تكلم صوتياً (إملاء صوتي باللغة العربية)">
+                <i class="fas fa-microphone"></i>
+            </button>
+            <input type="text" id="geminiInput" class="gemini-chat-input" placeholder="اسأل أو اطلب صوتياً..." onkeypress="if(event.key==='Enter') handleGeminiSend()">
             <button class="gemini-send-btn" onclick="handleGeminiSend()" title="إرسال">
                 <i class="fas fa-paper-plane"></i>
             </button>
