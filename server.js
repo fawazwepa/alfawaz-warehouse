@@ -78,32 +78,58 @@ function saveMedicinesFile() {
 
 loadLocalData();
 
-// Helper to get Google Gemini Model instance with fallbacks
-function getGeminiModel(customApiKey, preferredModel = 'gemini-2.5-flash') {
+// Helper to get Google Gemini Model instance with role-based system instructions
+function getGeminiModel(customApiKey, preferredModel = 'gemini-3.5-flash', role = 'general') {
   const apiKey = customApiKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
   if (!apiKey) {
     throw new Error('MISSING_API_KEY');
   }
 
   const genAI = new GoogleGenerativeAI(apiKey);
-  const systemInstruction = `أنت "مساعد الفواز الذكي" (Al-Fawaz Smart Pharmacy AI Assistant) - الخبير الصيدلاني والطبي المعتمد لمستودع الفواز للأدوية البشرية.
-مهماتك ومسؤولياتك الأساسية:
-1. الإجابة الدقيقة والاحترافية على استفسارات الأطباء والصيادلة حول الأدوية المتاحة في بروشور مستودع الفواز.
-2. توفير بدائل علمية دقيقة بناءً على المادة الفعالة (Active Ingredient)، مع توضيح الشركة المصنعة والأسعار الصافية (النت) والبونصات المتاحة.
-3. تفصيل الجرعات الدوائية، الأشكال الصيدلانية، دواعي الاستعمال، التداخلات الدوائية، والتحذيرات الطبية المعتمدة.
-4. تحليل وتدقيق سلة الطلبية الحالية، واقتراح طرق لزيادة البونص المجاني (مثلاً تكميل الحصص للحصول على بونص إضافي).
-5. تقديم الردود دائماً باللغة العربية بأسلوب صيدلاني مهني، واضح، منظم وجذاب، مدعماً بالقوائم والنقاط البارزة.
-6. إذا اقترحت أدوية متوفرة في المستودع، اذكر اسمها وسعرها بالليرة السورية والبونص المتوفر.
 
-معلومات المستودع وقاعدة البيانات الحالية:
-- عدد الأصناف المسجلة: ${medicinesData.length} مستحضر دوائي.
-- أبرز الشركات والوكالات: دومينا (Domina)، بركات (Barakat)، ميديكو (Medico)، هابي كيور (Happy Cure)، سيليا (Celia)، لاما (Lama)، ابن رشد (Ibn Rushd)، المتحدة (Allied)، وغيرها.
-- التواصل والطلبيات المباشرة: واتساب: 0995711536 | هاتف: 0933907943`;
+  // Define role-specific specialized system instructions
+  let systemInstruction = '';
+  if (role === 'clinical') {
+    systemInstruction = `أنت "المستشار الصيدلاني والسريري المتقدم" (Clinical & Pharmacology AI Specialist) لمستودع الفواز للأدوية البشرية.
+مهامك وخبرتك:
+1. تقديم استشارات طبية وصيدلانية سريرية متعمقة وعالية الدقة للأطباء والصيادلة.
+2. تفصيل التداخلات الدوائية (Drug-Drug Interactions)، موانع الاستعمال (Contraindications)، آلية العمل (Mechanism of Action)، والآثار الجانبية.
+3. حساب الجرعات الدوائية حسب الوزن والوظائف الكلوية/الكبدية، وملاءمة المستحضرات للحوامل والمرضعات.
+4. مطابقة الاحتياجات مع أدوية بروشور مستودع الفواز (${medicinesData.length} صنف مسجل) مع ذكر المادة الفعالة والعيار والشركة المنتجة.
+5. الإجابة باللغة العربية بأسلوب علمي رصين ومصطلحات طبية دقيقة.`;
+  } else if (role === 'fast') {
+    systemInstruction = `أنت "مستعلم المستودع الفوري السريع" (Ultra-Fast Drug & Price Lookup) لمستودع الفواز للأدوية البشرية.
+مهامك:
+1. تقديم إجابات فورية، موجزة ومباشرة جداً دون إطالة أو مقدمات.
+2. إعطاء سعر الدواء الصافي (النت)، العيار، الشركة، البونص المتاح، والتوفر فوراً.
+3. تقديم بديل سريع عند الطلب في سطرين فقط.`;
+  } else {
+    // Default / Warehouse / Commercial Advisor role
+    systemInstruction = `أنت "مساعد الفواز الصيدلاني الذكي" (Al-Fawaz Smart Pharmacy AI Assistant) - المستشار التجاري والصيدلاني لمستودع الفواز للأدوية البشرية.
+مهماتك ومسؤولياتك الأساسية:
+1. الإجابة الدقيقة على استفسارات الأطباء والصيادلة حول الأدوية المتاحة في بروشور مستودع الفواز (${medicinesData.length} صنف مسجل).
+2. توفير بدائل علمية دقيقة بناءً على المادة الفعالة (Active Ingredient)، مع توضيح الشركة المصنعة والأسعار الصافية بالليرة السورية والبونص المتاح.
+3. تحليل سلة الطلبية الحالية، واقتراح طرق لزيادة البونص المجاني (مثلاً تكميل الحصص للحصول على بونص إضافي).
+4. تسليط الضوء على عروض الشركات المعتمدة: دومينا (Domina)، بركات (Barakat)، ميديكو (Medico)، هابي كيور (Happy Cure)، سيليا (Celia)، لاما (Lama)، ابن رشد (Ibn Rushd)، المتحدة (Allied)، وغيرها.
+5. تقديم الردود بأسلوب صيدلاني مهني، واضح، منظم وجذاب، مدعماً بالجداول والنقاط.
+6. التواصل المباشر للمستودع: واتساب: 0995711536 | هاتف: 0933907943.`;
+  }
+
+  // Model name resolution based on requirements
+  let finalModel = preferredModel;
+  if (!finalModel || finalModel === 'default') {
+    if (role === 'clinical') finalModel = 'gemini-3.1-pro-preview';
+    else if (role === 'fast') finalModel = 'gemini-3.1-flash-lite-preview';
+    else finalModel = 'gemini-3.5-flash';
+  } else if (finalModel === 'gemini-3.1-flash-lite') {
+    finalModel = 'gemini-3.1-flash-lite-preview';
+  }
 
   return {
     genAI,
+    finalModelName: finalModel,
     model: genAI.getGenerativeModel({
-      model: preferredModel,
+      model: finalModel,
       systemInstruction
     })
   };
@@ -121,16 +147,20 @@ app.get('/api/gemini/status', (req, res) => {
     google_server_connected: true,
     has_server_api_key: hasEnvKey,
     catalog_items_loaded: medicinesData.length,
-    default_model: 'gemini-2.5-flash',
-    supported_models: ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'],
+    default_model: 'gemini-3.5-flash',
+    supported_models: [
+      { id: 'gemini-3.5-flash', name: 'Gemini 3.5 Flash (المهام العامة وتحليل الطلبيات والصوت)', role: 'general' },
+      { id: 'gemini-3.1-pro-preview', name: 'Gemini 3.1 Pro (المهام السريرية والتحليل المعقد)', role: 'clinical' },
+      { id: 'gemini-3.1-flash-lite-preview', name: 'Gemini 3.1 Flash Lite (الاستعلام والبحث السريع)', role: 'fast' }
+    ],
     timestamp: new Date().toISOString()
   });
 });
 
-// 2. Main Gemini Conversational Endpoint
+// 2. Main Gemini Multi-Turn Conversational Endpoint
 app.post(['/api/gemini', '/api/gemini/chat'], async (req, res) => {
   try {
-    const { prompt, customApiKey, currentCart, modelName } = req.body;
+    const { prompt, history, customApiKey, currentCart, modelName, role = 'general' } = req.body;
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return res.status(400).json({
@@ -139,9 +169,17 @@ app.post(['/api/gemini', '/api/gemini/chat'], async (req, res) => {
       });
     }
 
+    // Select suitable model: gemini-3.1-pro-preview for complex clinical, gemini-3.5-flash for general, gemini-3.1-flash-lite for fast
+    let selectedModel = modelName;
+    if (!selectedModel) {
+      if (role === 'clinical') selectedModel = 'gemini-3.1-pro-preview';
+      else if (role === 'fast') selectedModel = 'gemini-3.1-flash-lite-preview';
+      else selectedModel = 'gemini-3.5-flash';
+    }
+
     let modelInstance;
     try {
-      modelInstance = getGeminiModel(customApiKey, modelName || 'gemini-2.5-flash');
+      modelInstance = getGeminiModel(customApiKey, selectedModel, role);
     } catch (err) {
       if (err.message === 'MISSING_API_KEY') {
         return res.status(400).json({
@@ -160,7 +198,7 @@ app.post(['/api/gemini', '/api/gemini/chat'], async (req, res) => {
       const matched = medicinesData.filter(m => {
         const fullStr = `${m.اسم_الدواء} ${m.الشركة_المصنعة_عربي || ''} ${m.الشركة_المصنعة || ''} ${m.المادة_الفعالة || ''} ${m.الشكل_الصيدلاني || ''} ${m.التركيزة || ''} ${m.كود_المنتج || ''}`.toLowerCase();
         return cleanSearchTerms.some(term => fullStr.includes(term));
-      }).slice(0, 20);
+      }).slice(0, 25);
 
       if (matched.length > 0) {
         contextSnippet = `\n\n[أصناف مطابقة من مستودع الفواز ذات صلة باستفسار الصيدلي]:\n` + matched.map(m =>
@@ -176,16 +214,37 @@ app.post(['/api/gemini', '/api/gemini/chat'], async (req, res) => {
       ).join('\n');
     }
 
-    const fullPrompt = `${prompt.trim()}${contextSnippet}${cartSnippet}`;
+    const fullUserMessage = `${prompt.trim()}${contextSnippet}${cartSnippet}`;
+
+    // Multi-turn conversation handling
+    let formattedHistory = [];
+    if (history && Array.isArray(history) && history.length > 0) {
+      formattedHistory = history.map(item => {
+        const itemRole = item.role === 'model' || item.role === 'assistant' ? 'model' : 'user';
+        const textContent = typeof item.content === 'string' ? item.content :
+                            (item.parts && item.parts[0] && item.parts[0].text) ? item.parts[0].text :
+                            (item.text || '');
+        return {
+          role: itemRole,
+          parts: [{ text: textContent }]
+        };
+      }).filter(h => h.parts[0].text.trim().length > 0);
+    }
 
     let result;
     try {
-      result = await modelInstance.model.generateContent(fullPrompt);
+      if (formattedHistory.length > 0) {
+        const chat = modelInstance.model.startChat({
+          history: formattedHistory
+        });
+        result = await chat.sendMessage(fullUserMessage);
+      } else {
+        result = await modelInstance.model.generateContent(fullUserMessage);
+      }
     } catch (apiError) {
-      // Fallback model if primary model fails
-      console.warn('Primary Gemini model failed, trying fallback:', apiError.message);
-      const fallback = getGeminiModel(customApiKey, 'gemini-1.5-flash');
-      result = await fallback.model.generateContent(fullPrompt);
+      console.warn(`Primary Gemini model (${modelInstance.finalModelName}) failed, trying fallback:`, apiError.message);
+      const fallback = getGeminiModel(customApiKey, 'gemini-3.5-flash', role);
+      result = await fallback.model.generateContent(fullUserMessage);
     }
 
     const responseText = result.response.text();
@@ -193,14 +252,79 @@ app.post(['/api/gemini', '/api/gemini/chat'], async (req, res) => {
     res.json({
       success: true,
       reply: responseText,
+      modelUsed: modelInstance.finalModelName,
+      roleUsed: role,
       server_timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('Gemini API Error:', error);
+    console.error('Gemini Multi-turn API Error:', error);
     res.status(500).json({
       error: 'GEMINI_SERVER_ERROR',
-      message: `تعذر إكمال طلب الذكاء الاصطناعي: ${error.message || 'خطأ غير متوقع'}`
+      message: `تعذر إكمال استفسار الذكاء الاصطناعي: ${error.message || 'خطأ غير متوقع'}`
+    });
+  }
+});
+
+// 3. Dedicated Audio Transcription Endpoint using gemini-3.5-flash
+app.post('/api/gemini/transcribe-audio', async (req, res) => {
+  try {
+    const { audioData, mimeType = 'audio/webm', customApiKey, language = 'ar' } = req.body;
+
+    if (!audioData) {
+      return res.status(400).json({
+        error: 'NO_AUDIO_DATA',
+        message: 'لم يتم استلام أي ملف أو بيانات صوتية للتفريغ.'
+      });
+    }
+
+    const apiKey = customApiKey || process.env.GEMINI_API_KEY || process.env.API_KEY;
+    if (!apiKey) {
+      return res.status(400).json({
+        error: 'MISSING_API_KEY',
+        message: 'مفتاح Gemini API غير متاح في السيرفر لتفريغ الصوت.'
+      });
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
+    // MUST use model gemini-3.5-flash for audio transcription as specified in requirements
+    const model = genAI.getGenerativeModel({
+      model: 'gemini-3.5-flash',
+      systemInstruction: `أنت نظام تفريغ صوتي فوري وفائق الدقة مخصص لمستودع الفواز للأدوية البشرية والمصطلحات الطبية والصيدلانية.
+مهمتك:
+1. تحويل الصوت المسجل بدقة متناهية إلى نص مكتوب واضح ومفهوم باللغة العربية مع الحفاظ على الأسماء التجارية والإنجليزية للأدوية والمواد الفعالة والعيارات والكميات.
+2. لا تضف أي مقدمات، لا تضف ترحيب، ولا تضف شروحات أو علامات تنصيص زائدة.
+3. قم بإرجاع النص المفرّغ الحرفي فقط كما نطق به الصيدلي أو الطبيب.`
+    });
+
+    // Remove data URL prefix if present
+    const base64Data = audioData.includes(',') ? audioData.split(',')[1] : audioData;
+
+    const audioPart = {
+      inlineData: {
+        data: base64Data,
+        mimeType: mimeType || 'audio/webm'
+      }
+    };
+
+    const promptPart = {
+      text: 'يرجى تفريغ هذا التسجيل الصوتي بدقة تامة وكتابة ما قيل باللغة العربية والمصطلحات الدوائية بدقة وبدون أي مقدمة.'
+    };
+
+    const result = await model.generateContent([audioPart, promptPart]);
+    const transcribedText = result.response.text().trim();
+
+    res.json({
+      success: true,
+      text: transcribedText,
+      modelUsed: 'gemini-3.5-flash',
+      mimeType: mimeType
+    });
+  } catch (error) {
+    console.error('Audio Transcription Error (Gemini 3.5 Flash):', error);
+    res.status(500).json({
+      error: 'TRANSCRIPTION_FAILED',
+      message: `فشل تفريغ الصوت عبر Gemini 3.5 Flash: ${error.message || 'خطأ غير معروف'}`
     });
   }
 });

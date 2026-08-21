@@ -180,6 +180,10 @@
                             dir="rtl"
                             autocomplete="off"
                         >
+                        <!-- Voice Search with Gemini 3.5 Flash -->
+                        <button type="button" class="voice-search-btn" id="searchVoiceBtn" onclick="toggleAudioRecording('search')" title="البحث الصوتي الفوري عبر Gemini 3.5 Flash">
+                            <i class="fas fa-microphone"></i>
+                        </button>
                         <button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" title="مسح البحث">
                             <i class="fas fa-times"></i>
                         </button>
@@ -1118,23 +1122,40 @@
         <span class="gemini-badge-sparkle">Gemini AI</span>
     </button>
 
-    <!-- Gemini AI Chat Drawer -->
+    <!-- Gemini AI Chat Drawer (Multi-Turn Chatbot & Audio Transcription) -->
     <div class="gemini-chat-drawer" id="geminiChatDrawer" role="dialog" aria-label="مساعد الفواز الذكي">
+        <!-- Header -->
         <div class="gemini-chat-header">
             <div class="gemini-chat-title">
                 <i class="fas fa-robot"></i>
                 <div>
-                    <span>مساعد الفواز الصيدلاني (Gemini)</span>
+                    <div class="gemini-header-title-row">
+                        <span>مساعد الفواز الصيدلاني (Gemini AI)</span>
+                        <span id="geminiActiveModelBadge" class="gemini-active-model-pill"><i class="fas fa-microchip"></i> Gemini 3.5 Flash</span>
+                    </div>
                     <span id="aiServerStatusBadge" class="gemini-server-status online"><i class="fas fa-circle-check"></i> متصل بسيرفر Google Gemini</span>
                 </div>
             </div>
             <div class="gemini-header-actions">
-                <button class="gemini-icon-btn" onclick="toggleGeminiKeySettings()" title="إعدادات المفتاح والموديل">
+                <button type="button" class="gemini-icon-btn" onclick="clearGeminiChatHistory()" title="بدء محادثة جديدة ومسح السجل">
+                    <i class="fas fa-rotate-left"></i>
+                </button>
+                <button type="button" class="gemini-icon-btn" onclick="toggleGeminiKeySettings()" title="إعدادات الموديل ومفتاح API">
                     <i class="fas fa-sliders-h"></i>
                 </button>
-                <button class="gemini-icon-btn" onclick="closeGeminiChat()" title="إغلاق">
+                <button type="button" class="gemini-icon-btn" onclick="closeGeminiChat()" title="إغلاق النافذة">
                     <i class="fas fa-times"></i>
                 </button>
+            </div>
+        </div>
+
+        <!-- Role Selector Bar (Role-Specific System Instructions) -->
+        <div class="gemini-role-bar-wrap">
+            <div class="gemini-role-bar-label">
+                <i class="fas fa-user-tag"></i> <span>اختر دور المساعد الذكي:</span>
+            </div>
+            <div class="gemini-role-pills-row" id="geminiRoleSelector">
+                <!-- Rendered dynamically by JS -->
             </div>
         </div>
 
@@ -1143,10 +1164,11 @@
             <div><strong>إعدادات خادم وموديل Google Gemini:</strong></div>
             <div style="margin: 6px 0;">
                 <label style="font-size: 0.78rem; display: block; margin-bottom: 3px;">اختر إصدار الموديل الذكي:</label>
-                <select id="geminiModelSelect" class="form-control" style="font-size: 0.82rem; padding: 4px 8px;">
-                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (الأحدث، فائق السرعة والدقة)</option>
-                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                    <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                <select id="geminiModelSelect" class="form-control" style="font-size: 0.82rem; padding: 6px 8px; width: 100%;">
+                    <option value="default">تلقائي (حسب دور المساعد المختار)</option>
+                    <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro (تحليل سريري وفارماكولوجي متقدم ومعقد)</option>
+                    <option value="gemini-3.5-flash">Gemini 3.5 Flash (استشارات المستودع العامة والتفريغ الصوتي)</option>
+                    <option value="gemini-3.1-flash-lite-preview">Gemini 3.1 Flash Lite (الاستعلام والبحث السريع الخاطف)</option>
                 </select>
             </div>
             <div class="gemini-key-input-wrap">
@@ -1155,36 +1177,55 @@
             </div>
         </div>
 
-        <!-- Chat Messages -->
+        <!-- Transcribing Status Banner (Visible during audio transcription) -->
+        <div class="gemini-transcribing-status" id="geminiTranscribingStatus" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>جاري التفريغ الصوتي الفوري عبر <strong>Gemini 3.5 Flash</strong>...</span>
+        </div>
+
+        <!-- Chat Messages Thread (Scrollable Multi-turn) -->
         <div class="gemini-chat-messages" id="geminiMessagesContainer">
-            <div class="gemini-msg bot">
-                <div class="gemini-msg-body">
-                    أهلاً بك دكتور! 👋 أنا **مساعد الفواز الصيدلاني الذكي** المتصل مباشرة بسيرفر **Google Gemini AI** وقاعدة بيانات المستودع الحية.<br>
-                    يمكنك سؤالي صوتياً أو كتابياً عن:
-                    <div class="gemini-list-item">• البدائل الدوائية المتاحة ومقارنة العيارات</div>
-                    <div class="gemini-list-item">• المواد الفعالة والتداخلات الدوائية</div>
-                    <div class="gemini-list-item">• عروض البونص والخصومات الإضافية</div>
-                    <div class="gemini-list-item">• تحليل سلة طلبيتك الحالية بضغطة زر واحدة</div>
-                </div>
-                <div class="gemini-msg-time">الآن</div>
-            </div>
+            <!-- Rendered dynamically by loadChatHistory() / renderChatMessages() -->
         </div>
 
         <!-- Quick Chips Suggestions -->
-        <div class="gemini-quick-chips">
-            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي أدوية وبدائل الأوفلوكساسين المتاحة بالبروشور؟')">💊 بدائل الأوفلوكساسين</button>
-            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('اقترح علي أفضل أدوية البونص العالي المتاحة')">🎁 عروض البونص الأعلى</button>
-            <button class="gemini-chip" onclick="analyzeCartWithGemini()">📊 تحليل سلة الطلبية الحالية</button>
-            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي الأدوية الخافضة للحرارة والمسكنات المتوفرة؟')">🩺 المسكنات وخافضات الحرارة</button>
+        <div class="gemini-quick-chips" id="geminiQuickChipsContainer">
+            <!-- Rendered dynamically based on active role -->
         </div>
 
-        <!-- Chat Input Bar with Voice Support -->
+        <!-- Live Audio Recording Overlay (Waveform & Timer) -->
+        <div class="gemini-audio-recording-overlay" id="geminiAudioRecordingOverlay" style="display: none;">
+            <div class="recording-pulse-indicator">
+                <span class="rec-dot"></span>
+                <span class="rec-label">تسجيل صوتي مباشر (Gemini 3.5 Flash)</span>
+            </div>
+            <div class="recording-waveform-bars">
+                <span class="rec-bar b1"></span>
+                <span class="rec-bar b2"></span>
+                <span class="rec-bar b3"></span>
+                <span class="rec-bar b4"></span>
+                <span class="rec-bar b5"></span>
+                <span class="rec-bar b6"></span>
+                <span class="rec-bar b7"></span>
+            </div>
+            <div class="recording-timer" id="recordingTimerText">00:00</div>
+            <div class="recording-overlay-actions">
+                <button type="button" class="btn-rec-finish" onclick="stopAudioRecording()" title="إنهاء التسجيل وتفريغه بـ Gemini 3.5 Flash">
+                    <i class="fas fa-check"></i> تفريغ الصوت 🎙️
+                </button>
+                <button type="button" class="btn-rec-cancel" onclick="cancelAudioRecording()" title="إلغاء">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            </div>
+        </div>
+
+        <!-- Chat Input Bar with Microphone Transcription -->
         <div class="gemini-chat-input-bar">
-            <button class="gemini-voice-btn" id="geminiVoiceBtn" onclick="toggleVoiceRecording()" title="تكلم صوتياً (إملاء صوتي باللغة العربية)">
+            <button type="button" class="gemini-voice-btn" id="geminiVoiceBtn" onclick="toggleAudioRecording('chat')" title="تكلم صوتياً (تفريغ عبر Gemini 3.5 Flash)">
                 <i class="fas fa-microphone"></i>
             </button>
-            <input type="text" id="geminiInput" class="gemini-chat-input" placeholder="اسأل أو اطلب صوتياً..." onkeypress="if(event.key==='Enter') handleGeminiSend()">
-            <button class="gemini-send-btn" onclick="handleGeminiSend()" title="إرسال">
+            <input type="text" id="geminiInput" class="gemini-chat-input" placeholder="اسأل، ناقش، أو تحدث بالميكروفون..." onkeypress="if(event.key==='Enter') handleGeminiSend()">
+            <button type="button" class="gemini-send-btn" onclick="handleGeminiSend()" title="إرسال">
                 <i class="fas fa-paper-plane"></i>
             </button>
         </div>
