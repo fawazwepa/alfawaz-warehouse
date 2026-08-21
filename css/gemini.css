@@ -1,0 +1,285 @@
+/* =============================================================
+   Al-Fawaz Pharmaceutical Warehouse - Gemini AI Assistant Styles
+   ============================================================= */
+
+/* Floating Gemini AI Button */
+.gemini-float-btn {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 990;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed, #2563eb);
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.25rem;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.9rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    box-shadow: 0 4px 20px rgba(79, 70, 229, 0.45);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s;
+    animation: geminiPulse 3s infinite;
+}
+
+@keyframes geminiPulse {
+    0%, 100% {
+        box-shadow: 0 4px 20px rgba(79, 70, 229, 0.45);
+    }
+    50% {
+        box-shadow: 0 4px 28px rgba(124, 58, 237, 0.75);
+    }
+}
+
+.gemini-float-btn:hover {
+    transform: translateY(-3px) scale(1.03);
+    box-shadow: 0 6px 25px rgba(79, 70, 229, 0.6);
+}
+
+.gemini-badge-sparkle {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 2px 7px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+}
+
+/* Gemini Chat Modal Drawer */
+.gemini-chat-drawer {
+    position: fixed;
+    bottom: 5.5rem;
+    right: 1.5rem;
+    width: 420px;
+    max-width: calc(100vw - 2rem);
+    height: 560px;
+    max-height: calc(100vh - 7rem);
+    background-color: #ffffff;
+    border-radius: var(--radius-lg);
+    box-shadow: 0 12px 35px rgba(15, 23, 42, 0.25);
+    border: 1px solid var(--border-light);
+    z-index: 995;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) scale(0.95);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.3s;
+}
+
+.gemini-chat-drawer.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+.gemini-chat-header {
+    background: linear-gradient(135deg, #1b4332, #2d6a4f, #1e1b4b);
+    color: #ffffff;
+    padding: 0.9rem 1.1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--accent-gold);
+}
+
+.gemini-chat-title {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gemini-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gemini-icon-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: none;
+    color: #ffffff;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    transition: background 0.2s;
+}
+
+.gemini-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* API Key Settings Bar inside Chat */
+.gemini-key-settings {
+    background-color: var(--accent-gold-light);
+    border-bottom: 1px solid var(--border-accent);
+    padding: 0.6rem 0.85rem;
+    font-size: 0.775rem;
+    display: none;
+}
+
+.gemini-key-settings.active {
+    display: block;
+}
+
+.gemini-key-input-wrap {
+    display: flex;
+    gap: 0.4rem;
+    margin-top: 0.35rem;
+}
+
+.gemini-key-input {
+    flex: 1;
+    padding: 0.35rem 0.5rem;
+    font-size: 0.775rem;
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-sm);
+}
+
+.gemini-key-save-btn {
+    background-color: var(--primary-deep);
+    color: #ffffff;
+    border: none;
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+/* Messages Area */
+.gemini-chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    background-color: #f8fafc;
+}
+
+.gemini-msg {
+    max-width: 85%;
+    padding: 0.75rem 0.95rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.gemini-msg.bot {
+    align-self: flex-start;
+    background-color: #ffffff;
+    color: var(--text-primary);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-sm);
+    border-top-right-radius: 2px;
+}
+
+.gemini-msg.user {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #1b4332, #2d6a4f);
+    color: #ffffff;
+    border-top-left-radius: 2px;
+}
+
+.gemini-msg-time {
+    font-size: 0.675rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    text-align: left;
+}
+
+.gemini-msg.user .gemini-msg-time {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Quick Prompt Chips */
+.gemini-quick-chips {
+    padding: 0.5rem 0.85rem;
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+.gemini-chip {
+    background-color: var(--bg-muted);
+    border: 1px solid var(--border-light);
+    color: var(--text-secondary);
+    padding: 0.35rem 0.65rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gemini-chip:hover {
+    background-color: var(--primary-mint);
+    color: var(--primary-deep);
+    border-color: var(--primary-light);
+}
+
+/* Chat Input Bar */
+.gemini-chat-input-bar {
+    padding: 0.75rem;
+    background-color: #ffffff;
+    border-top: 1px solid var(--border-light);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.gemini-chat-input {
+    flex: 1;
+    padding: 0.6rem 0.85rem;
+    border: 1.5px solid var(--border-light);
+    border-radius: var(--radius-md);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+}
+
+.gemini-chat-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+}
+
+.gemini-send-btn {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #ffffff;
+    border: none;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: transform 0.15s;
+}
+
+.gemini-send-btn:hover {
+    transform: scale(1.05);
+}
+
+.gemini-typing-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}

@@ -1,0 +1,243 @@
+/* =============================================================
+   Al-Fawaz Pharmaceutical Warehouse - Medicine Cards Stylesheet
+   3-Layer Card Architecture with Semi-Transparent Watermark Logo
+   ============================================================= */
+
+.medicines-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+/* Medicine Card Container */
+.medicine-card {
+    position: relative;
+    background-color: var(--bg-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--border-light);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.25s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.medicine-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-light);
+}
+
+/* Layer 2: Semi-Transparent Manufacturer Watermark Logo */
+.card-watermark {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: 65% auto;
+    opacity: 0.06;
+    pointer-events: none;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    filter: grayscale(20%);
+}
+
+.medicine-card:hover .card-watermark {
+    opacity: 0.12;
+    transform: scale(1.05);
+}
+
+/* Layer 3: Foreground Content */
+.card-content {
+    position: relative;
+    z-index: 2;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* Card Header: Brand & Bonus */
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.card-brand {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--primary-deep);
+    background-color: var(--primary-mint);
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.card-bonus {
+    background-color: var(--accent-gold-light);
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 0.2rem 0.65rem;
+    border-radius: var(--radius-full);
+    font-family: var(--font-heading);
+}
+
+/* Product Title */
+.medicine-name {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    line-height: 1.35;
+    min-height: 2.7rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Scientific Composition Tag */
+.scientific-composition {
+    font-size: 0.825rem;
+    color: var(--text-secondary);
+    background-color: var(--bg-muted);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+    margin-bottom: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    line-height: 1.3;
+}
+
+.scientific-composition i {
+    color: var(--primary-main);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+}
+
+.scientific-composition span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Medicine Specs List */
+.medicine-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 1rem;
+    font-size: 0.825rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.detail-label {
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+/* Availability Stock Badge */
+.stock-status-wrap {
+    margin-bottom: 1rem;
+}
+
+.stock-badge-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.775rem;
+    font-weight: 700;
+    padding: 0.2rem 0.5rem;
+    border-radius: var(--radius-sm);
+}
+
+.stock-badge-tag.in-stock {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.stock-badge-tag.low-stock {
+    background-color: #fef3c7;
+    color: #b45309;
+}
+
+.stock-badge-tag.out-of-stock {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+/* Card Footer: Price & Add Button */
+.card-footer-row {
+    margin-top: auto;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--border-light);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.price-display {
+    display: flex;
+    flex-direction: column;
+}
+
+.price-label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.price-val {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--primary-deep);
+}
+
+.price-currency {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+/* Card Add Button */
+.card-add-btn {
+    background-color: var(--primary-deep);
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 0.95rem;
+    border-radius: var(--radius-md);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    transition: background-color 0.2s;
+}
+
+.card-add-btn:hover {
+    background-color: var(--primary-main);
+}

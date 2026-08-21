@@ -1,0 +1,16 @@
+{
+  "name": "al-fawaz-pharmaceutical-warehouse",
+  "version": "1.0.0",
+  "description": "تطبيق مستودع الفواز للأدوية البشرية",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "echo 'No build step required'"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "express": "^4.19.2"
+  }
+}

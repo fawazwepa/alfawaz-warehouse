@@ -1,0 +1,12 @@
+{
+  "app_configuration": {
+    "name": "Al-Fawaz Warehouse",
+    "version": "1.0.0",
+    "project_id": "al-fawaz-a-warehouse",
+    "project_number": 406977991839,
+    "language": "ar",
+    "currency": "OMR",
+    "primary_color": "#1E90FF",
+    "secondary_color": "#FF6B6B"
+  }
+}

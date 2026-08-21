@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="تطبيق ومستودع الفواز للأدوية البشرية - دليل وبروشور الأدوية المنظم حسب الوكالات، الأسعار والبونصات المعتمدة">
+    <title>مستودع الفواز - الأدوية البشرية</title>
+    
+    <!-- PWA Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1b4332">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="مستودع الفواز">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png">
+
+    <!-- Google Fonts - Cairo & Tajawal -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/cards.css">
+    <link rel="stylesheet" href="css/gemini.css">
+    <link rel="stylesheet" href="css/responsive.css">
+    
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Top Contact Bar -->
+    <div class="top-announcement-bar">
+        <div class="container top-bar-content">
+            <div class="top-contact-item">
+                <i class="fas fa-store"></i>
+                <span>مستودع الفواز للأدوية البشرية — بروشور منظم وتحديث أسعار مباشر</span>
+            </div>
+            <div class="top-contact-links">
+                <a href="https://wa.me/963995711536" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> واتساب الطلبيات: 0995711536</a>
+                <span class="divider">|</span>
+                <a href="tel:0933907943"><i class="fas fa-phone"></i> 0933907943</a>
+                <span class="divider">|</span>
+                <a href="https://www.facebook.com/share/1EKasNNroD/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> فيسبوك</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar" id="mainNavbar">
+        <div class="navbar-container">
+            <div class="navbar-brand" onclick="resetFilters()">
+                <div class="brand-logo-wrap">
+                    <img src="https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png" alt="شعار مستودع الفواز" class="brand-logo-img">
+                </div>
+                <div class="brand-titles">
+                    <span class="brand-name">مستودع الفواز</span>
+                    <span class="brand-sub">للأدوية البشرية</span>
+                </div>
+            </div>
+
+            <!-- Navbar Quick Controls -->
+            <div class="navbar-controls">
+                <!-- View Mode Switcher -->
+                <div class="view-mode-toggle" id="navViewToggle">
+                    <button class="toggle-btn active" id="btnTableView" onclick="switchViewMode('table')" title="عرض جدول البروشور">
+                        <i class="fas fa-table"></i>
+                        <span class="hide-mobile">جدول البروشور</span>
+                    </button>
+                    <button class="toggle-btn" id="btnGridView" onclick="switchViewMode('grid')" title="عرض بطاقات الأدوية">
+                        <i class="fas fa-th-large"></i>
+                        <span class="hide-mobile">بطاقات</span>
+                    </button>
+                </div>
+
+                <!-- Shopping Cart Button -->
+                <button class="cart-nav-btn" id="cartNavBtn" onclick="toggleCartDrawer()">
+                    <i class="fas fa-shopping-basket"></i>
+                    <span>سلة الطلبية</span>
+                    <span id="cartBadge" class="cart-badge">0</span>
+                </button>
+
+                <!-- PWA Install Button -->
+                <button id="pwaInstallBtn" class="pwa-install-btn" style="display: none;">
+                    <i class="fas fa-download"></i>
+                    <span>تثبيت التطبيق</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header / Brochure Title Banner -->
+    <header class="brochure-header-banner">
+        <div class="header-overlay"></div>
+        <div class="container header-container">
+            <div class="header-text-block">
+                <div class="official-badge">
+                    <i class="fas fa-file-medical-alt"></i> البروشور المنظم المعتمد 2026
+                </div>
+                <h1 class="header-main-title">البروشور المنظم — مستودع الفواز للأدوية البشرية</h1>
+                <p class="header-subtitle">جدول شامل مرتب حسب الشركة | الاسم | النت | البونص</p>
+                <div class="header-stats-row">
+                    <div class="stat-pill"><i class="fas fa-boxes"></i> <span id="statMedicinesCount">0</span> دواء ومستحضر</div>
+                    <div class="stat-pill"><i class="fas fa-building"></i> <span id="statAgenciesCount">35</span> وكالة وشركة معتمدة</div>
+                    <div class="stat-pill highlight"><i class="fas fa-gift"></i> بونصات حصرية مجانية</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Search & Filter Controls Toolbar -->
+    <section class="controls-toolbar-section">
+        <div class="container">
+            <div class="controls-card">
+                <!-- Search Bar & Reset -->
+                <div class="search-row">
+                    <div class="search-input-wrap">
+                        <i class="fas fa-search search-icon"></i>
+                        <input 
+                            type="text" 
+                            id="searchInput" 
+                            class="main-search-input" 
+                            placeholder="ابحث باسم الدواء التجاري، المادة الفعالة، الشركة، أو كود المنتج..."
+                            dir="rtl"
+                            autocomplete="off"
+                        >
+                        <button class="clear-search-btn" id="clearSearchBtn" onclick="clearSearch()" title="مسح البحث">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+
+                    <!-- Filter & Sort Selectors -->
+                    <div class="selects-group">
+                        <div class="select-wrap">
+                            <label for="sortSelect"><i class="fas fa-sort-amount-down"></i> الترتيب:</label>
+                            <select id="sortSelect" onchange="handleSortChange()">
+                                <option value="company">حسب الشركة (ترتيب البروشور)</option>
+                                <option value="name_asc">حسب الاسم (أبجدي أ-ي)</option>
+                                <option value="price_asc">السعر الصافي (النت: من الأقل للأعلى)</option>
+                                <option value="price_desc">السعر الصافي (النت: من الأعلى للأقل)</option>
+                                <option value="bonus_desc">حسب البونص الأعلى</option>
+                            </select>
+                        </div>
+
+                        <div class="select-wrap">
+                            <label for="bonusFilterSelect"><i class="fas fa-tags"></i> العروض:</label>
+                            <select id="bonusFilterSelect" onchange="handleBonusFilterChange()">
+                                <option value="all">جميع الأدوية والمستحضرات</option>
+                                <option value="with_bonus">الأدوية المتاح بها بونص فقط</option>
+                                <option value="high_bonus">بونص عالي (أكثر من 20%)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Agency Pills Carousel / Filter Bar -->
+                <div class="agency-filter-wrapper">
+                    <div class="agency-filter-header">
+                        <span><i class="fas fa-filter"></i> تصفية حسب الشركة والوكالة المصنعة:</span>
+                        <button class="reset-filter-link" onclick="resetFilters()"><i class="fas fa-undo"></i> عرض الكل</button>
+                    </div>
+                    <div class="agency-pills-scroll" id="manufacturerPills">
+                        <!-- Populated dynamically by JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Data Display Area -->
+    <main class="main-display-section" id="mainDisplaySection">
+        <div class="container">
+            <!-- Active Filters Bar -->
+            <div class="active-filters-summary" id="activeFiltersSummary" style="display: none;">
+                <span class="summary-text" id="summaryText">نتائج البحث:</span>
+                <button class="clear-all-chip" onclick="resetFilters()"><i class="fas fa-times-circle"></i> إلغاء الفلاتر</button>
+            </div>
+
+            <!-- View 1: Table View (PDF Brochure Style) -->
+            <div class="brochure-table-container" id="tableViewContainer">
+                <div class="table-responsive-wrapper">
+                    <table class="brochure-table" id="brochureTable">
+                        <thead>
+                            <tr>
+                                <th class="col-company"><i class="fas fa-building"></i> الشركة</th>
+                                <th class="col-name"><i class="fas fa-pills"></i> الاسم والتفاصيل الصيدلانية</th>
+                                <th class="col-price"><i class="fas fa-money-bill-wave"></i> النت (ل.س)</th>
+                                <th class="col-bonus"><i class="fas fa-gift"></i> البونص</th>
+                                <th class="col-action"><i class="fas fa-cart-plus"></i> طلب مباشر</th>
+                            </tr>
+                        </thead>
+                        <tbody id="brochureTableBody">
+                            <!-- Populated dynamically by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- View 2: Cards Grid View -->
+            <div class="medicines-grid-container" id="gridViewContainer" style="display: none;">
+                <div class="medicines-grid" id="medicinesGrid">
+                    <!-- Populated dynamically by JS -->
+                </div>
+            </div>
+
+            <!-- No Results State -->
+            <div class="no-results-card" id="noResultsState" style="display: none;">
+                <div class="no-results-icon"><i class="fas fa-search-minus"></i></div>
+                <h3>لم نجد أي دواء مطابق للبحث</h3>
+                <p>يرجى التأكد من كتابة الاسم الصحيح، أو اختيار شركة مصنعة أخرى من قائمة الوكالات أعلاه.</p>
+                <button class="primary-btn" onclick="resetFilters()"><i class="fas fa-redo"></i> إظهار جميع الأدوية</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Slide-over Order Cart Drawer -->
+    <div class="cart-drawer-overlay" id="cartDrawerOverlay" onclick="closeCartDrawer()"></div>
+    <aside class="cart-drawer" id="cartDrawer" aria-label="سلة الطلبيات">
+        <div class="drawer-header">
+            <div class="drawer-title">
+                <i class="fas fa-shopping-basket"></i>
+                <span>سلة طلبية الصيدلية</span>
+                <span id="drawerCartCount" class="badge">0</span>
+            </div>
+            <button class="drawer-close-btn" onclick="closeCartDrawer()" aria-label="إغلاق السلة">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <div class="drawer-body">
+            <!-- Cart Items List -->
+            <div class="cart-items-list" id="cartItemsList">
+                <!-- Cart items added dynamically -->
+            </div>
+
+            <!-- Empty Cart State -->
+            <div class="empty-cart-view" id="emptyCartView">
+                <i class="fas fa-basket-shopping empty-icon"></i>
+                <h4>سلة الطلبيات فارغة حالياً</h4>
+                <p>قم بإضافة الأدوية المطلوبة من جدول البروشور أو البطاقات لإرسال الطلبية مباشرة.</p>
+            </div>
+
+            <!-- Pharmacy Information Form -->
+            <div class="pharmacy-form-card" id="pharmacyFormCard" style="display: none;">
+                <h5><i class="fas fa-clinic-medical"></i> معلومات الصيدلية والطلب</h5>
+                <div class="form-group">
+                    <label for="pharmacyNameInput">اسم الصيدلية / المركز الطبي *</label>
+                    <input type="text" id="pharmacyNameInput" class="form-control" placeholder="مثال: صيدلية الأمل">
+                </div>
+                <div class="form-group">
+                    <label for="pharmacistNameInput">اسم الصيدلي / الدكتور *</label>
+                    <input type="text" id="pharmacistNameInput" class="form-control" placeholder="مثال: د. أحمد">
+                </div>
+                <div class="form-group">
+                    <label for="pharmacyPhoneInput">رقم الموبايل / التواصل *</label>
+                    <input type="tel" id="pharmacyPhoneInput" class="form-control" placeholder="مثال: 0991234567" dir="ltr">
+                </div>
+                <div class="form-group">
+                    <label for="pharmacyCityInput">المدينة / العنوان</label>
+                    <input type="text" id="pharmacyCityInput" class="form-control" placeholder="مثال: دمشق - الميدان">
+                </div>
+                <div class="form-group">
+                    <label for="orderNotesInput">ملاحظات الطلبية (إن وجدت)</label>
+                    <textarea id="orderNotesInput" class="form-control" rows="2" placeholder="أية تعليمات خاصة للتوصيل أو التعبئة..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Drawer Footer with Totals and Actions -->
+        <div class="drawer-footer" id="drawerFooter" style="display: none;">
+            <div class="totals-summary-box">
+                <div class="total-row">
+                    <span>إجمالي الأصناف:</span>
+                    <strong id="cartTotalItems">0 صنف</strong>
+                </div>
+                <div class="total-row">
+                    <span>إجمالي السعر الصافي (النت):</span>
+                    <strong id="cartNetTotalPrice" class="price-highlight">0 ل.س</strong>
+                </div>
+                <div class="total-row bonus-highlight">
+                    <span><i class="fas fa-gift"></i> إجمالي البونص المتوقع:</span>
+                    <strong id="cartTotalBonusFree">+0 عبوة مجانية</strong>
+                </div>
+            </div>
+
+            <div class="action-buttons-stack">
+                <button class="whatsapp-send-btn" id="sendWhatsappBtn" onclick="sendOrderToWhatsApp()">
+                    <i class="fab fa-whatsapp"></i>
+                    <span>إرسال الطلبية عبر واتساب المباشر</span>
+                </button>
+                <button class="print-order-btn" onclick="printCurrentOrder()">
+                    <i class="fas fa-print"></i>
+                    <span>طباعة / حفظ فاتورة الطلب</span>
+                </button>
+                <button class="clear-cart-link" onclick="clearCart()">
+                    <i class="fas fa-trash-alt"></i> تفريغ السلة
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Medicine Details Modal -->
+    <div id="medicineModalOverlay" class="modal-overlay" aria-hidden="true" onclick="handleModalOverlayClick(event)">
+        <div class="modal-container" role="dialog" aria-modal="true" aria-labelledby="modalMedicineName">
+            <button class="modal-close-btn" id="modalCloseBtn" onclick="closeMedicineModal()" aria-label="إغلاق">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="modal-header">
+                <div class="modal-header-top">
+                    <span class="modal-brand" id="modalBrand"></span>
+                    <span class="modal-bonus" id="modalBonus"></span>
+                </div>
+                <h2 class="modal-title" id="modalMedicineName">اسم الدواء</h2>
+                <div class="modal-code"><i class="fas fa-barcode"></i> <span id="modalProductCode">كود الدواء: -</span></div>
+            </div>
+            
+            <div class="modal-body">
+                <div class="modal-badge-row">
+                    <div class="modal-badge stock-badge" id="modalStockBadge">
+                        <i class="fas fa-check-circle" id="modalStockIcon"></i>
+                        <span id="modalStockStatusText">متوفر بالمستودع</span>
+                    </div>
+                    <div class="modal-badge price-badge">
+                        <span id="modalPrice">0</span> <span>ل.س (النت)</span>
+                    </div>
+                </div>
+
+                <p class="modal-description" id="modalDescription"></p>
+
+                <div class="modal-details-grid">
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-flask"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">المادة الفعالة / التركيب العلمي</span>
+                            <span class="detail-value" id="modalActiveIngredients">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-pills"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">الشكل الصيدلاني</span>
+                            <span class="detail-value" id="modalDosageForm">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-weight-hanging"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">التركيزة / العيار</span>
+                            <span class="detail-value" id="modalDosage">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-calendar-alt"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">تاريخ الصلاحية</span>
+                            <span class="detail-value" id="modalExpiryDate">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-boxes"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">حالة التوفر بمستودع الفواز</span>
+                            <span class="detail-value" id="modalQuantity">-</span>
+                        </div>
+                    </div>
+
+                    <div class="modal-detail-card">
+                        <div class="detail-icon"><i class="fas fa-building"></i></div>
+                        <div class="detail-info">
+                            <span class="detail-title">الشركة المصنعة / الوكالة</span>
+                            <span class="detail-value" id="modalManufacturer">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-extra-section">
+                    <div class="extra-block">
+                        <h4><i class="fas fa-notes-medical"></i> طريقة الاستخدام والإرشادات</h4>
+                        <p id="modalUsageInstructions">-</p>
+                    </div>
+                    <div class="extra-block warning-block">
+                        <h4><i class="fas fa-exclamation-triangle"></i> التحذيرات والاحتياطات</h4>
+                        <p id="modalPrecautions">-</p>
+                    </div>
+                    <div class="extra-block info-block">
+                        <h4><i class="fas fa-snowflake"></i> ظروف التخزين</h4>
+                        <p id="modalStorage">-</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="quantity-input-inline">
+                    <label for="modalQtyInput">الكمية المطلوبة:</label>
+                    <input type="number" id="modalQtyInput" min="1" max="1000" value="1">
+                </div>
+                <button class="modal-add-cart-btn" id="modalAddToCartBtn">
+                    <i class="fas fa-cart-plus"></i>
+                    <span>إضافة إلى سلة الطلبية</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Printable Invoice Template (Hidden until print) -->
+    <div id="printableInvoiceArea" class="printable-invoice-area" style="display: none;">
+        <!-- Generated dynamically during print -->
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-brand-section">
+                <div class="footer-logo">
+                    <img src="https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png" alt="مستودع الفواز">
+                    <h3>مستودع الفواز للأدوية البشرية</h3>
+                </div>
+                <p class="footer-desc">
+                    الوكيل المعتمد والمورد الأول لكبرى الشركات الطبية والصيدلانية المحلية والدولية. نوفر بروشور أدوية منظم مع تحديث مستمر للأسعار والبونصات للصيادلة والمراكز الطبية.
+                </p>
+            </div>
+
+            <div class="footer-links-section">
+                <h4>الوكالات المعتمدة</h4>
+                <div class="footer-agencies-grid">
+                    <span>دومينا</span><span>بركات</span><span>ميديكو</span><span>المتحدة</span>
+                    <span>ابن رشد</span><span>لاما</span><span>هابي كيور</span><span>سيليا</span>
+                    <span>زين</span><span>بيوميد</span><span>يونيفارما</span><span>ابن الهيثم</span>
+                </div>
+            </div>
+
+            <div class="footer-contact-section">
+                <h4>التواصل والطلبيات المباشرة</h4>
+                <p><i class="fab fa-whatsapp"></i> <a href="https://wa.me/963995711536" target="_blank" rel="noopener">واتساب: 0995711536</a></p>
+                <p><i class="fas fa-phone"></i> هاتف: 0933907943 / 0995711536</p>
+                <p><i class="fab fa-facebook"></i> <a href="https://www.facebook.com/share/1EKasNNroD/" target="_blank" rel="noopener">الصفحة الرسمية على الفيسبوك</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom-bar">
+            <div class="container">
+                <p>&copy; 2026 مستودع الفواز للأدوية البشرية - جميع الحقوق محفوظة | PWA Web Application</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Gemini AI Floating Assistant Button -->
+    <button class="gemini-float-btn" id="geminiFloatBtn" onclick="toggleGeminiChat()">
+        <i class="fas fa-brain"></i>
+        <span>مساعد الفواز الذكي</span>
+        <span class="gemini-badge-sparkle">Gemini</span>
+    </button>
+
+    <!-- Gemini AI Chat Drawer -->
+    <div class="gemini-chat-drawer" id="geminiChatDrawer" role="dialog" aria-label="مساعد الفواز الذكي">
+        <div class="gemini-chat-header">
+            <div class="gemini-chat-title">
+                <i class="fas fa-robot"></i>
+                <span>مساعد الفواز الصيدلاني (Gemini)</span>
+            </div>
+            <div class="gemini-header-actions">
+                <button class="gemini-icon-btn" onclick="toggleGeminiKeySettings()" title="إعدادات المفتاح">
+                    <i class="fas fa-key"></i>
+                </button>
+                <button class="gemini-icon-btn" onclick="closeGeminiChat()" title="إغلاق">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Custom Key Settings Dropdown -->
+        <div class="gemini-key-settings" id="geminiKeySettingsBox">
+            <div><strong>إعدادات Gemini API Key:</strong></div>
+            <div class="gemini-key-input-wrap">
+                <input type="password" id="geminiCustomApiKeyInput" class="gemini-key-input" placeholder="أدخل مفتاح AI Studio الخاص بك هنا...">
+                <button class="gemini-key-save-btn" onclick="saveCustomGeminiApiKey()">حفظ</button>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="gemini-chat-messages" id="geminiMessagesContainer">
+            <div class="gemini-msg bot">
+                <div>أهلاً بك دكتور! 👋 أنا **مساعد الفواز الذكي** المطور بواسطة **Gemini AI**.<br>كيف يمكنني مساعدتك اليوم في الاستفسار عن الأدوية، المواد الفعالة، البدائل، أو تحليل سلة الطلبية؟</div>
+                <div class="gemini-msg-time">الآن</div>
+            </div>
+        </div>
+
+        <!-- Quick Chips Suggestions -->
+        <div class="gemini-quick-chips">
+            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي أدوية وبدائل الأوفلوكساسين المتاحة بالبروشور؟')">💊 بدائل الأوفلوكساسين</button>
+            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('اقترح علي أفضل أدوية البونص العالي المتاحة')">🎁 عروض البونص الأعلى</button>
+            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('ما هي دواعي استعمال ادفانسيد HSN والجرعة؟')">🩺 دواعي استعمال ادفانسيد</button>
+            <button class="gemini-chip" onclick="sendQuickGeminiPrompt('حلل لي سلة الطلبية الحالية واقترح تحسينات')">📊 تحليل الطلبية الحالية</button>
+        </div>
+
+        <!-- Chat Input Bar -->
+        <div class="gemini-chat-input-bar">
+            <input type="text" id="geminiInput" class="gemini-chat-input" placeholder="اسأل عن دواء، مادة فعالة، أو بديل..." onkeypress="if(event.key==='Enter') handleGeminiSend()">
+            <button class="gemini-send-btn" onclick="handleGeminiSend()" title="إرسال">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- JavaScript Files -->
+    <script src="js/app.js"></script>
+    <script src="js/search.js"></script>
+    <script src="js/manufacturers.js"></script>
+    <script src="js/appsheet-connector.js"></script>
+    <script src="js/gemini-assistant.js"></script>
+</body>
+</html>

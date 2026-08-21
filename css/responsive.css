@@ -1,0 +1,124 @@
+/* =============================================================
+   Al-Fawaz Pharmaceutical Warehouse - Responsive Stylesheet
+   Mobile First, Tablet, ChromeOS & Desktop Adaptations
+   ============================================================= */
+
+@media (max-width: 992px) {
+    .header-main-title {
+        font-size: 1.85rem;
+    }
+
+    .brochure-table th.col-company { width: 16%; }
+    .brochure-table th.col-name { width: 38%; }
+}
+
+@media (max-width: 768px) {
+    .top-announcement-bar {
+        font-size: 0.775rem;
+    }
+
+    .top-bar-content {
+        justify-content: center;
+        text-align: center;
+    }
+
+    .navbar-container {
+        padding: 0.6rem 1rem;
+    }
+
+    .brand-name {
+        font-size: 1.1rem;
+    }
+
+    .brand-sub {
+        font-size: 0.7rem;
+    }
+
+    .hide-mobile {
+        display: none !important;
+    }
+
+    .header-main-title {
+        font-size: 1.5rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.95rem;
+    }
+
+    .controls-card {
+        padding: 1rem;
+    }
+
+    .search-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .selects-group {
+        justify-content: space-between;
+        width: 100%;
+    }
+
+    .select-wrap {
+        flex: 1;
+    }
+
+    .select-wrap select {
+        width: 100%;
+    }
+
+    .medicines-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1rem;
+    }
+
+    .cart-drawer {
+        max-width: 100%;
+    }
+
+    .brochure-table {
+        font-size: 0.85rem;
+    }
+
+    .brochure-table th, .brochure-table td {
+        padding: 0.65rem 0.5rem;
+    }
+
+    .table-medicine-title {
+        font-size: 0.925rem;
+    }
+
+    .row-quick-add-wrap {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-stats-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .stat-pill {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .medicines-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-details-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modal-footer {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .modal-add-cart-btn {
+        justify-content: center;
+    }
+}

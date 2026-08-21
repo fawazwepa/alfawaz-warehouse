@@ -1,0 +1,27 @@
+{
+  "name": "Al Fawaz Pharma - مستودع الفواز للأدوية البشرية",
+  "short_name": "مستودع الفواز",
+  "description": "تطبيق مستودع الفواز للأدوية البشرية - استعراض وطلب الأدوية للصيادلة والرعاة الطبيين",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ECF0F1",
+  "theme_color": "#1E90FF",
+  "orientation": "portrait-primary",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    {
+      "src": "https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://i.postimg.cc/Qx6h6DHX/file-1781813091153.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
